@@ -1,25 +1,19 @@
-import ClaimView from '../../../components/ClaimView';
-import ErrorView from '../../../components/ErrorView';
-import { getPublicClaimByToken } from '../../../lib/get-public-claim';
+import ClaimView from '@/components/ClaimView';
+import ErrorView from '@/components/ErrorView';
+import { getPublicClaimByToken } from '@/lib/get-public-claim';
 
-export default async function ClaimTokenPage({
-  params,
-}: {
+type PageProps = {
   params: Promise<{ token: string }>;
-}) {
+};
+
+export default async function ClaimPage({ params }: PageProps) {
   const { token } = await params;
   const result = await getPublicClaimByToken(token);
 
-  if (result.error === 'invalid') {
-    return <ErrorView message="Invalid or revoked link." />;
-  }
+  console.log('PAGE data:', result);
 
-  if (result.error === 'expired') {
-    return <ErrorView message="This link has expired." />;
-  }
-
-  if (result.error === 'not_found' || !result.data) {
-    return <ErrorView message="Claim not found." />;
+  if (result.error) {
+    return <ErrorView error={result.error} />;
   }
 
   return <ClaimView data={result.data} />;

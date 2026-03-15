@@ -23,10 +23,6 @@ export async function getPublicClaimByToken(
     .eq('token', cleanToken)
     .single();
 
-  console.log('DEBUG token:', cleanToken);
-  console.log('DEBUG shareLink:', shareLink);
-  console.log('DEBUG shareError:', shareError);
-
   if (shareError || !shareLink) {
     return { error: 'invalid', data: null };
   }
@@ -41,9 +37,6 @@ export async function getPublicClaimByToken(
     .eq('id', shareLink.incident_id)
     .single();
 
-  console.log('DEBUG incident:', incident);
-  console.log('DEBUG incidentError:', incidentError);
-
   if (incidentError || !incident) {
     return { error: 'not_found', data: null };
   }
@@ -54,15 +47,18 @@ export async function getPublicClaimByToken(
     .eq('trip_id', incident.trip_id)
     .order('created_at', { ascending: true });
 
+  console.log('DEBUG incident.id:', incident?.id);
   console.log('DEBUG expensesError:', expensesError);
 
   const { data: documents, error: documentsError } = await supabaseAdmin
     .from('documents')
     .select('*')
     .eq('incident_id', incident.id)
-    .order('created_at', { ascending: true });
+    .order('uploaded_at', { ascending: true });
 
   console.log('DEBUG documentsError:', documentsError);
+  console.log('DEBUG documents count:', documents?.length ?? 0);
+  console.log('DEBUG documents sample:', documents?.slice?.(0, 3) ?? []);
 
   return {
     error: null,
