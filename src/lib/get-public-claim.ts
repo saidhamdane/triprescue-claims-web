@@ -52,7 +52,7 @@ export async function getPublicClaimByToken(
     .from('incident_expenses')
     .select('*')
     .eq('trip_id', incident.trip_id)
-    .order('uploaded_at', { ascending: true });
+    .order('created_at', { ascending: true });
 
   console.log('DEBUG expensesError:', expensesError);
 
@@ -60,7 +60,7 @@ export async function getPublicClaimByToken(
     .from('documents')
     .select('*')
     .eq('incident_id', incident.id)
-    .order('uploaded_at', { ascending: true });
+    .order('created_at', { ascending: true });
 
   console.log('DEBUG documentsError:', documentsError);
 
