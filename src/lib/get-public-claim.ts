@@ -59,7 +59,7 @@ export async function getPublicClaimByToken(
   const { data: documents, error: documentsError } = await supabaseAdmin
     .from('documents')
     .select('*')
-    .eq('trip_id', incident.trip_id)
+    .eq('incident_id', incident.id)
     .order('uploaded_at', { ascending: true });
 
   console.log('DEBUG documentsError:', documentsError);
