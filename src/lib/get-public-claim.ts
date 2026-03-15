@@ -51,16 +51,16 @@ export async function getPublicClaimByToken(
   const { data: expenses, error: expensesError } = await supabaseAdmin
     .from('incident_expenses')
     .select('*')
-    .eq('incident_id', incident.id)
-    .order('created_at', { ascending: true });
+    .eq('trip_id', incident.trip_id)
+    .order('uploaded_at', { ascending: true });
 
   console.log('DEBUG expensesError:', expensesError);
 
   const { data: documents, error: documentsError } = await supabaseAdmin
     .from('documents')
     .select('*')
-    .eq('incident_id', incident.id)
-    .order('created_at', { ascending: true });
+    .eq('trip_id', incident.trip_id)
+    .order('uploaded_at', { ascending: true });
 
   console.log('DEBUG documentsError:', documentsError);
 
