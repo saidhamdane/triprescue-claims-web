@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from 'next/cache';
 import { supabaseAdmin } from './supabase-admin';
 
 export type PublicClaimResult =
@@ -15,6 +16,8 @@ export type PublicClaimResult =
 export async function getPublicClaimByToken(
   token: string
 ): Promise<PublicClaimResult> {
+  noStore();
+
   const cleanToken = token.trim();
 
   const { data: shareLink, error: shareError } = await supabaseAdmin
@@ -41,24 +44,17 @@ export async function getPublicClaimByToken(
     return { error: 'not_found', data: null };
   }
 
-  const { data: expenses, error: expensesError } = await supabaseAdmin
+  const { data: expenses } = await supabaseAdmin
     .from('incident_expenses')
     .select('*')
     .eq('trip_id', incident.trip_id)
     .order('created_at', { ascending: true });
 
-  console.log('DEBUG incident.id:', incident?.id);
-  console.log('DEBUG expensesError:', expensesError);
-
-  const { data: documents, error: documentsError } = await supabaseAdmin
+  const { data: documents } = await supabaseAdmin
     .from('documents')
     .select('*')
     .eq('incident_id', incident.id)
     .order('uploaded_at', { ascending: true });
-
-  console.log('DEBUG documentsError:', documentsError);
-  console.log('DEBUG documents count:', documents?.length ?? 0);
-  console.log('DEBUG documents sample:', documents?.slice?.(0, 3) ?? []);
 
   return {
     error: null,
