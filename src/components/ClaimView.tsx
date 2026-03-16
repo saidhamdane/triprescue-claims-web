@@ -71,7 +71,6 @@ export default function ClaimView({ data }: ClaimViewProps) {
   const { incident, expenses, documents } = data;
   const imageDocs = documents.filter(isProbablyImage);
   const otherDocs = documents.filter((doc) => !isProbablyImage(doc));
-
   const amount =
     incident?.claim_amount ??
     incident?.estimated_value_loss ??
@@ -99,19 +98,11 @@ export default function ClaimView({ data }: ClaimViewProps) {
       const res = await fetch('/api/generate-claim-letter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          language,
-          incident,
-          expenses,
-          documents,
-        }),
+        body: JSON.stringify({ language, incident, expenses, documents }),
       });
 
       const payload = await res.json();
-
-      if (!res.ok) {
-        throw new Error(payload?.error || 'Failed to generate letter');
-      }
+      if (!res.ok) throw new Error(payload?.error || 'Failed to generate letter');
 
       setGeneratedLetter(payload?.letter || '');
       setServerEligibility(payload?.eligibility || null);
@@ -128,116 +119,203 @@ export default function ClaimView({ data }: ClaimViewProps) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 py-10">
-      <div className="max-w-3xl mx-auto">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-          <div className="inline-flex items-center rounded-full border border-blue-800 bg-blue-950/50 px-3 py-1 text-xs font-medium text-blue-300 mb-4">
+    <main
+      style={{
+        minHeight: '100vh',
+        background: '#020817',
+        color: '#fff',
+        padding: '24px 16px',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <div style={{ maxWidth: 980, margin: '0 auto' }}>
+        <div
+          style={{
+            background: '#0f172a',
+            border: '1px solid #1e293b',
+            borderRadius: 24,
+            padding: 24,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-block',
+              padding: '6px 12px',
+              borderRadius: 999,
+              background: '#172554',
+              color: '#93c5fd',
+              fontSize: 12,
+              marginBottom: 16,
+            }}
+          >
             Shared Claim
           </div>
 
-          <h1 className="text-4xl font-bold mb-2">Claim Summary</h1>
-          <p className="text-slate-400 mb-8">ID: {incident?.id ?? 'N/A'}</p>
+          <h1 style={{ fontSize: 42, margin: '0 0 8px', fontWeight: 700 }}>
+            Claim Summary
+          </h1>
+          <p style={{ color: '#94a3b8', marginBottom: 24 }}>
+            ID: {incident?.id ?? 'N/A'}
+          </p>
 
-          <div className="space-y-4 mb-8">
-            <div className="rounded-2xl bg-slate-800/60 p-4">
-              <div className="text-slate-400 text-sm mb-1">Incident Type</div>
-              <div className="text-lg font-semibold">
+          <div style={{ display: 'grid', gap: 16, marginBottom: 24 }}>
+            <div style={card}>
+              <div style={label}>Incident Type</div>
+              <div style={value}>
                 {formatIncidentType(incident?.type ?? incident?.incident_type)}
               </div>
             </div>
 
-            <div className="rounded-2xl bg-slate-800/60 p-4">
-              <div className="text-slate-400 text-sm mb-1">Description</div>
-              <div className="text-base">
+            <div style={card}>
+              <div style={label}>Description</div>
+              <div style={{ ...value, lineHeight: 1.6 }}>
                 {incident?.description ?? incident?.title ?? 'No description'}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl bg-slate-800/60 p-4">
-                <div className="text-slate-400 text-sm mb-1">Airline</div>
-                <div>{incident?.airline ?? 'N/A'}</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: 16,
+              }}
+            >
+              <div style={card}>
+                <div style={label}>Airline</div>
+                <div style={value}>{incident?.airline ?? 'N/A'}</div>
               </div>
 
-              <div className="rounded-2xl bg-slate-800/60 p-4">
-                <div className="text-slate-400 text-sm mb-1">Flight Number</div>
-                <div>{incident?.flight_number ?? 'N/A'}</div>
+              <div style={card}>
+                <div style={label}>Flight Number</div>
+                <div style={value}>{incident?.flight_number ?? 'N/A'}</div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl bg-blue-950/60 border border-blue-900/50 p-5 mb-6">
-            <div className="text-slate-300 text-sm mb-2">Claim Amount</div>
-            <div className="text-4xl font-bold text-blue-400">
+          <div
+            style={{
+              background: '#172554',
+              border: '1px solid #1d4ed8',
+              borderRadius: 20,
+              padding: 20,
+              marginBottom: 24,
+            }}
+          >
+            <div style={{ color: '#cbd5e1', fontSize: 14, marginBottom: 8 }}>
+              Claim Amount
+            </div>
+            <div style={{ color: '#60a5fa', fontSize: 44, fontWeight: 700 }}>
               ${Number(amount).toFixed(2)}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-indigo-800 bg-indigo-950/40 p-5 mb-6">
-            <div className="text-sm text-indigo-300 mb-2">Compensation Check</div>
-            <div className="text-xl font-semibold mb-2">{eligibility.status}</div>
-            <div className="text-slate-300 mb-1">
-              <span className="font-medium">Framework:</span> {eligibility.framework}
+          <div
+            style={{
+              background: '#1e1b4b',
+              border: '1px solid #3730a3',
+              borderRadius: 20,
+              padding: 20,
+              marginBottom: 24,
+            }}
+          >
+            <div style={{ color: '#a5b4fc', fontSize: 14, marginBottom: 8 }}>
+              Compensation Check
             </div>
-            <div className="text-slate-300 mb-1">
-              <span className="font-medium">Confidence:</span> {eligibility.confidence}
+            <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+              {eligibility.status}
             </div>
-            <p className="text-slate-400 mt-2">{eligibility.reason}</p>
+            <div style={{ color: '#cbd5e1', marginBottom: 6 }}>
+              <strong>Framework:</strong> {eligibility.framework}
+            </div>
+            <div style={{ color: '#cbd5e1', marginBottom: 6 }}>
+              <strong>Confidence:</strong> {eligibility.confidence}
+            </div>
+            <p style={{ color: '#94a3b8', lineHeight: 1.6 }}>{eligibility.reason}</p>
 
             <button
               onClick={() => setOpenLetterModal(true)}
-              className="mt-4 rounded-2xl bg-blue-600 hover:bg-blue-500 px-4 py-3 font-semibold text-white"
+              style={{
+                marginTop: 16,
+                background: '#2563eb',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 14,
+                padding: '12px 18px',
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
             >
               ✨ Generate AI Claim Letter
             </button>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Expenses</h2>
+          <section style={{ marginBottom: 24 }}>
+            <h2 style={sectionTitle}>Expenses</h2>
             {expenses.length === 0 ? (
-              <div className="rounded-2xl bg-slate-800/40 p-4 text-slate-400">
-                No expenses attached.
-              </div>
+              <div style={emptyBox}>No expenses attached.</div>
             ) : (
-              <div className="space-y-3">
+              <div style={{ display: 'grid', gap: 12 }}>
                 {expenses.map((expense) => (
-                  <div
-                    key={expense.id}
-                    className="rounded-2xl bg-slate-800/60 p-4 flex items-center justify-between"
-                  >
-                    <div className="font-medium">
-                      {expense.description ?? 'Expense'}
-                    </div>
-                    <div className="text-blue-400 font-semibold">
+                  <div key={expense.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={value}>{expense.description ?? 'Expense'}</div>
+                    <div style={{ ...value, color: '#60a5fa' }}>
                       ${Number(expense.amount ?? 0).toFixed(2)}
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </section>
 
-          <div>
-            <h2 className="text-2xl font-semibold mb-4">Documents</h2>
+          <section>
+            <h2 style={sectionTitle}>Documents</h2>
 
             {imageDocs.length > 0 && (
-              <div className="mb-6">
-                <div className="text-slate-400 text-sm mb-2">Images</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 10 }}>
+                  Images
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                    gap: 16,
+                  }}
+                >
                   {imageDocs.map((doc) => (
                     <div
                       key={doc.id}
-                      className="rounded-2xl overflow-hidden bg-slate-800/60 p-1"
+                      style={{
+                        background: '#0b1220',
+                        border: '1px solid #1e293b',
+                        borderRadius: 18,
+                        overflow: 'hidden',
+                      }}
                     >
                       <a href={doc.file_url} target="_blank" rel="noreferrer">
                         <img
                           src={doc.file_url}
-                          alt={doc.name ?? doc.file_name ?? 'Incident image'}
-                          className="w-full h-48 object-cover rounded-xl"
+                          alt={doc.name ?? 'Incident image'}
+                          style={{
+                            width: '100%',
+                            height: 220,
+                            objectFit: 'cover',
+                            display: 'block',
+                            background: '#111827',
+                          }}
                         />
                       </a>
-                      <div className="p-2 text-xs text-slate-400 break-all">
-                        {doc.name ?? doc.file_name ?? 'Image'}
+                      <div
+                        style={{
+                          padding: 10,
+                          fontSize: 12,
+                          color: '#94a3b8',
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        {doc.name ?? 'Image'}
                       </div>
                     </div>
                   ))}
@@ -246,18 +324,27 @@ export default function ClaimView({ data }: ClaimViewProps) {
             )}
 
             {otherDocs.length > 0 && (
-              <div className="space-y-3">
+              <div style={{ display: 'grid', gap: 12 }}>
                 {otherDocs.map((doc) => (
-                  <div key={doc.id} className="rounded-2xl bg-slate-800/60 p-4">
-                    <div className="font-medium mb-2">
-                      {doc.name ?? doc.file_name ?? 'Document'}
+                  <div key={doc.id} style={card}>
+                    <div style={{ ...value, marginBottom: 10 }}>
+                      {doc.name ?? 'Document'}
                     </div>
                     {doc.file_url && (
                       <a
                         href={doc.file_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center rounded-xl border border-blue-800 bg-blue-950/50 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-900/50"
+                        style={{
+                          display: 'inline-block',
+                          background: '#172554',
+                          color: '#93c5fd',
+                          border: '1px solid #1d4ed8',
+                          borderRadius: 12,
+                          padding: '10px 14px',
+                          textDecoration: 'none',
+                          fontWeight: 600,
+                        }}
                       >
                         Open file
                       </a>
@@ -267,75 +354,76 @@ export default function ClaimView({ data }: ClaimViewProps) {
               </div>
             )}
 
-            {documents.length === 0 && (
-              <div className="rounded-2xl bg-slate-800/40 p-4 text-slate-400">
-                No documents attached.
-              </div>
-            )}
-          </div>
+            {documents.length === 0 && <div style={emptyBox}>No documents attached.</div>}
+          </section>
         </div>
       </div>
 
       {openLetterModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 p-4 flex items-center justify-center">
-          <div className="w-full max-w-2xl rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold">Generate AI Claim Letter</h3>
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 860,
+              background: '#0f172a',
+              border: '1px solid #334155',
+              borderRadius: 24,
+              padding: 24,
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ fontSize: 28, margin: 0 }}>Generate AI Claim Letter</h3>
               <button
                 onClick={() => setOpenLetterModal(false)}
-                className="rounded-xl border border-slate-700 px-3 py-2 text-slate-300"
+                style={secondaryBtn}
               >
                 Close
               </button>
             </div>
 
-            <div className="mb-4">
-              <div className="text-sm text-slate-400 mb-2">Select language</div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setLanguage('en')}
-                  className={`rounded-xl px-4 py-2 border ${language === 'en' ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-700 text-slate-300'}`}
-                >
-                  🇬🇧 English
-                </button>
-                <button
-                  onClick={() => setLanguage('ar')}
-                  className={`rounded-xl px-4 py-2 border ${language === 'ar' ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-700 text-slate-300'}`}
-                >
-                  🇸🇦 العربية
-                </button>
-                <button
-                  onClick={() => setLanguage('es')}
-                  className={`rounded-xl px-4 py-2 border ${language === 'es' ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-700 text-slate-300'}`}
-                >
-                  🇪🇸 Español
-                </button>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>
+                Select language
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button onClick={() => setLanguage('en')} style={langBtn(language === 'en')}>🇬🇧 English</button>
+                <button onClick={() => setLanguage('ar')} style={langBtn(language === 'ar')}>🇸🇦 العربية</button>
+                <button onClick={() => setLanguage('es')} style={langBtn(language === 'es')}>🇪🇸 Español</button>
               </div>
             </div>
 
-            <button
-              onClick={generateLetter}
-              disabled={loadingLetter}
-              className="rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 px-4 py-3 font-semibold text-white mb-4"
-            >
+            <button onClick={generateLetter} disabled={loadingLetter} style={primaryBtn}>
               {loadingLetter ? 'Generating...' : 'Generate'}
             </button>
 
             {letterError && (
-              <div className="rounded-2xl border border-red-800 bg-red-950/40 p-4 text-red-300 mb-4">
+              <div style={{ ...card, border: '1px solid #7f1d1d', background: '#450a0a', color: '#fecaca', marginTop: 16 }}>
                 {letterError}
               </div>
             )}
 
             {serverEligibility && (
-              <div className="rounded-2xl border border-indigo-800 bg-indigo-950/30 p-4 mb-4">
-                <div className="font-semibold mb-2">Eligibility result</div>
-                <div className="text-slate-300 text-sm">Status: {serverEligibility.status}</div>
-                <div className="text-slate-300 text-sm">Framework: {serverEligibility.framework}</div>
-                <div className="text-slate-300 text-sm">Confidence: {serverEligibility.confidence}</div>
-                <div className="text-slate-400 text-sm mt-2">{serverEligibility.reason}</div>
+              <div style={{ ...card, marginTop: 16 }}>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>Eligibility result</div>
+                <div style={{ color: '#cbd5e1', marginBottom: 4 }}>Status: {serverEligibility.status}</div>
+                <div style={{ color: '#cbd5e1', marginBottom: 4 }}>Framework: {serverEligibility.framework}</div>
+                <div style={{ color: '#cbd5e1', marginBottom: 4 }}>Confidence: {serverEligibility.confidence}</div>
+                <div style={{ color: '#94a3b8', marginTop: 8 }}>{serverEligibility.reason}</div>
                 {serverEligibility.missingInfo?.length > 0 && (
-                  <div className="text-slate-400 text-sm mt-2">
+                  <div style={{ color: '#94a3b8', marginTop: 8 }}>
                     Missing info: {serverEligibility.missingInfo.join(', ')}
                   </div>
                 )}
@@ -343,25 +431,25 @@ export default function ClaimView({ data }: ClaimViewProps) {
             )}
 
             {generatedLetter && (
-              <div>
+              <div style={{ marginTop: 16 }}>
                 <textarea
                   value={generatedLetter}
                   readOnly
-                  className="w-full min-h-[320px] rounded-2xl bg-slate-950 border border-slate-700 p-4 text-slate-200"
+                  style={{
+                    width: '100%',
+                    minHeight: 320,
+                    background: '#020617',
+                    color: '#e2e8f0',
+                    border: '1px solid #334155',
+                    borderRadius: 16,
+                    padding: 16,
+                    fontSize: 15,
+                    lineHeight: 1.6,
+                  }}
                 />
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={copyLetter}
-                    className="rounded-xl border border-slate-700 px-4 py-2 text-slate-200"
-                  >
-                    Copy
-                  </button>
-                  <button
-                    onClick={generateLetter}
-                    className="rounded-xl border border-slate-700 px-4 py-2 text-slate-200"
-                  >
-                    Regenerate
-                  </button>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                  <button onClick={copyLetter} style={secondaryBtn}>Copy</button>
+                  <button onClick={generateLetter} style={secondaryBtn}>Regenerate</button>
                 </div>
               </div>
             )}
@@ -370,4 +458,72 @@ export default function ClaimView({ data }: ClaimViewProps) {
       )}
     </main>
   );
+}
+
+const card: React.CSSProperties = {
+  background: 'rgba(30,41,59,0.75)',
+  border: '1px solid #1e293b',
+  borderRadius: 18,
+  padding: 16,
+};
+
+const label: React.CSSProperties = {
+  color: '#94a3b8',
+  fontSize: 14,
+  marginBottom: 6,
+};
+
+const value: React.CSSProperties = {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: 600,
+};
+
+const sectionTitle: React.CSSProperties = {
+  fontSize: 28,
+  fontWeight: 700,
+  marginBottom: 14,
+};
+
+const emptyBox: React.CSSProperties = {
+  background: 'rgba(30,41,59,0.45)',
+  border: '1px solid #1e293b',
+  borderRadius: 18,
+  padding: 16,
+  color: '#94a3b8',
+};
+
+const primaryBtn: React.CSSProperties = {
+  background: '#2563eb',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 14,
+  padding: '12px 18px',
+  fontSize: 16,
+  fontWeight: 700,
+  cursor: 'pointer',
+};
+
+const secondaryBtn: React.CSSProperties = {
+  background: '#111827',
+  color: '#e2e8f0',
+  border: '1px solid #334155',
+  borderRadius: 12,
+  padding: '10px 14px',
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: 'pointer',
+};
+
+function langBtn(active: boolean): React.CSSProperties {
+  return {
+    background: active ? '#2563eb' : '#111827',
+    color: '#fff',
+    border: active ? '1px solid #3b82f6' : '1px solid #334155',
+    borderRadius: 12,
+    padding: '10px 14px',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+  };
 }
