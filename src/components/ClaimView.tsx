@@ -1,4 +1,5 @@
 import { ClaimData } from '../lib/get-public-claim';
+import ClaimLetterGenerator from './ClaimLetterGenerator';
 
 const typeConfig: Record<string, { icon: string; label: string; color: string; bg: string }> = {
   lost_baggage: { icon: '🧳', label: 'Lost Baggage', color: '#c2410c', bg: '#fff7ed' },
