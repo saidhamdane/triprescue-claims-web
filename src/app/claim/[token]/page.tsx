@@ -1,6 +1,6 @@
-import ClaimView from '@/components/ClaimView';
-import ErrorView from '@/components/ErrorView';
-import { getPublicClaimByToken } from '@/lib/get-public-claim';
+import ClaimView from '../../../components/ClaimView';
+import ErrorView from '../../../components/ErrorView';
+import { getPublicClaimByToken } from '../../../lib/get-public-claim';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
