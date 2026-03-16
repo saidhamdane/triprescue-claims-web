@@ -13,6 +13,24 @@ export type PublicClaimResult =
       };
     };
 
+function sortDocs(items: any[]) {
+  return [...items].sort((a, b) => {
+    const ad = new Date(a?.uploaded_at ?? a?.created_at ?? 0).getTime();
+    const bd = new Date(b?.uploaded_at ?? b?.created_at ?? 0).getTime();
+    return ad - bd;
+  });
+}
+
+function dedupeDocs(items: any[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = String(item?.id ?? item?.file_url ?? Math.random());
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function getPublicClaimByToken(
   token: string
 ): Promise<PublicClaimResult> {
@@ -50,11 +68,29 @@ export async function getPublicClaimByToken(
     .eq('trip_id', incident.trip_id)
     .order('created_at', { ascending: true });
 
-  const { data: documents } = await supabaseAdmin
+  const { data: docsByIncident, error: docsByIncidentError } = await supabaseAdmin
     .from('documents')
     .select('*')
     .eq('incident_id', incident.id)
     .order('uploaded_at', { ascending: true });
+
+  const { data: docsByTrip, error: docsByTripError } = await supabaseAdmin
+    .from('documents')
+    .select('*')
+    .eq('trip_id', incident.trip_id)
+    .order('uploaded_at', { ascending: true });
+
+  const mergedDocuments = sortDocs(
+    dedupeDocs([...(docsByIncident ?? []), ...(docsByTrip ?? [])])
+  );
+
+  console.log('DEBUG incident.id:', incident?.id);
+  console.log('DEBUG incident.trip_id:', incident?.trip_id);
+  console.log('DEBUG docsByIncidentError:', docsByIncidentError);
+  console.log('DEBUG docsByTripError:', docsByTripError);
+  console.log('DEBUG docsByIncident count:', docsByIncident?.length ?? 0);
+  console.log('DEBUG docsByTrip count:', docsByTrip?.length ?? 0);
+  console.log('DEBUG mergedDocuments count:', mergedDocuments.length);
 
   return {
     error: null,
@@ -62,7 +98,7 @@ export async function getPublicClaimByToken(
       shareLink,
       incident,
       expenses: expenses ?? [],
-      documents: documents ?? [],
+      documents: mergedDocuments,
     },
   };
 }

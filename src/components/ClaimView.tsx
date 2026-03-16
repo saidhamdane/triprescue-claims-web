@@ -9,21 +9,20 @@ type ClaimViewProps = {
 
 function formatIncidentType(value?: string) {
   if (!value) return 'Unknown';
-  return value
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function isImageFile(doc: any) {
+function isProbablyImage(doc: any) {
   const url = String(doc?.file_url ?? '').toLowerCase();
   const name = String(doc?.name ?? doc?.file_name ?? '').toLowerCase();
-
   return (
     url.includes('/storage/v1/object/public/') ||
+    url.includes('baggage-photo') ||
     url.endsWith('.jpg') ||
     url.endsWith('.jpeg') ||
     url.endsWith('.png') ||
     url.endsWith('.webp') ||
+    name.includes('baggage-photo') ||
     name.endsWith('.jpg') ||
     name.endsWith('.jpeg') ||
     name.endsWith('.png') ||
@@ -33,11 +32,8 @@ function isImageFile(doc: any) {
 
 export default function ClaimView({ data }: ClaimViewProps) {
   const { incident, expenses, documents } = data;
-  const imageDocs = documents.filter(isImageFile);
-
-  console.log('ClaimView documents:', documents);
-  console.log('ClaimView documents length:', documents?.length ?? 0);
-  console.log('ClaimView imageDocs length:', imageDocs?.length ?? 0);
+  const imageDocs = documents.filter(isProbablyImage);
+  const otherDocs = documents.filter((doc) => !isProbablyImage(doc));
 
   const amount =
     incident?.claim_amount ??
@@ -144,13 +140,9 @@ export default function ClaimView({ data }: ClaimViewProps) {
               </div>
             )}
 
-            {documents.length === 0 ? (
-              <div className="rounded-2xl bg-slate-800/40 p-4 text-slate-400">
-                No documents attached.
-              </div>
-            ) : (
+            {otherDocs.length > 0 && (
               <div className="space-y-3">
-                {documents.map((doc) => (
+                {otherDocs.map((doc) => (
                   <div key={doc.id} className="rounded-2xl bg-slate-800/60 p-4">
                     <div className="font-medium mb-2">
                       {doc.name ?? doc.file_name ?? 'Document'}
@@ -168,6 +160,12 @@ export default function ClaimView({ data }: ClaimViewProps) {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {documents.length === 0 && (
+              <div className="rounded-2xl bg-slate-800/40 p-4 text-slate-400">
+                No documents attached.
               </div>
             )}
           </div>
