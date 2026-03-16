@@ -147,7 +147,6 @@ export default function ClaimView({ data }: ClaimViewProps) {
                     <div className="font-medium mb-2">
                       {doc.name ?? doc.file_name ?? 'Document'}
                     </div>
-
                     {doc.file_url && (
                       <a
                         href={doc.file_url}

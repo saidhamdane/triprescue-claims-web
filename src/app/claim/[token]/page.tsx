@@ -1,9 +1,10 @@
+import { getPublicClaim } from '../../../lib/get-public-claim';
 import ClaimView from '../../../components/ClaimView';
 import ErrorView from '../../../components/ErrorView';
-import { getPublicClaimByToken } from '../../../lib/get-public-claim';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 type PageProps = {
   params: Promise<{ token: string }>;
@@ -11,11 +12,11 @@ type PageProps = {
 
 export default async function ClaimPage({ params }: PageProps) {
   const { token } = await params;
-  const result = await getPublicClaimByToken(token);
+  const { data, error } = await getPublicClaim(token);
 
-  if (result.error) {
-    return <ErrorView error={result.error} />;
+  if (error || !data) {
+    return <ErrorView message={error || 'Claim not found'} />;
   }
 
-  return <ClaimView data={result.data} />;
+  return <ClaimView data={data} />;
 }
