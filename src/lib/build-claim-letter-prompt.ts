@@ -10,6 +10,7 @@ type Input = {
     missingInfo: string[];
     confidence: string;
   };
+  flightStatus?: any;
 };
 
 export function buildClaimLetterPrompt({
@@ -18,11 +19,9 @@ export function buildClaimLetterPrompt({
   expenses,
   documents,
   eligibility,
+  flightStatus,
 }: Input) {
-  const totalExpenses = (expenses || []).reduce(
-    (sum, e) => sum + Number(e.amount || 0),
-    0
-  );
+  const totalExpenses = (expenses || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
   const langInstruction =
     language === 'ar'
@@ -45,9 +44,8 @@ ${langInstruction}
 
 Write a polished, professional, ready-to-send airline claim letter.
 Do not use markdown.
-Do not include bullet points unless natural in the chosen language.
 Do not invent facts.
-Do not state legal certainty unless the facts clearly support it.
+Do not overstate legal certainty.
 Use a firm but professional tone.
 Request a written response within 14 days.
 
@@ -71,6 +69,9 @@ Incident details:
 - Claim amount: ${incident?.claim_amount || 0} ${incident?.currency || 'USD'}
 - Additional expenses total: ${totalExpenses} ${incident?.currency || 'USD'}
 - Number of supporting documents: ${(documents || []).length}
+
+Flight verification data:
+${flightStatus ? JSON.stringify(flightStatus, null, 2) : 'No live flight verification available'}
 
 Requirements:
 1. Include a subject line
