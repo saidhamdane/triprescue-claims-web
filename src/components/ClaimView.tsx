@@ -103,6 +103,44 @@ function downloadLetterAsTxt(letter: string, incident: any) {
   URL.revokeObjectURL(url);
 }
     
+function buildEffectiveIncident(baseIncident: any, extra: any) {
+  return {
+    ...baseIncident,
+    passenger_name:
+      extra?.manualPassengerName ||
+      baseIncident?.passenger_name ||
+      baseIncident?.full_name ||
+      baseIncident?.user_name ||
+      baseIncident?.name ||
+      '',
+    passenger_email:
+      extra?.manualPassengerEmail ||
+      baseIncident?.passenger_email ||
+      baseIncident?.email ||
+      baseIncident?.user_email ||
+      '',
+    reference_number:
+      extra?.manualReferenceNumber ||
+      baseIncident?.reference_number ||
+      '',
+    travel_date:
+      extra?.manualTravelDate ||
+      baseIncident?.travel_date ||
+      baseIncident?.date ||
+      '',
+    departure_airport:
+      extra?.manualDepartureAirport ||
+      baseIncident?.departure_airport ||
+      baseIncident?.origin ||
+      '',
+    arrival_airport:
+      extra?.manualArrivalAirport ||
+      baseIncident?.arrival_airport ||
+      baseIncident?.destination ||
+      '',
+  };
+}
+
 function getPassengerName(incident: any) {
   return (
     incident?.passenger_name ||
@@ -236,8 +274,16 @@ function downloadLetterAsPdf(letter: string, incident: any) {
 export default function ClaimView({ data }: ClaimViewProps) {
   const { incident, expenses, documents } = data;
   const safeDocuments = dedupeDocuments(documents || []);
-  const autoPassengerName = getPassengerName(incident);
-  const autoPassengerEmail = getPassengerEmail(incident);
+  const effectiveIncident = buildEffectiveIncident(incident, {
+    manualPassengerName,
+    manualPassengerEmail,
+    manualReferenceNumber,
+    manualTravelDate,
+    manualDepartureAirport,
+    manualArrivalAirport,
+  });
+  const autoPassengerName = getPassengerName(effectiveIncident);
+  const autoPassengerEmail = getPassengerEmail(effectiveIncident);
   const imageDocs = safeDocuments.filter(isProbablyImage);
   const otherDocs = safeDocuments.filter((doc) => !isProbablyImage(doc));
   const amount = incident?.claim_amount ?? incident?.estimated_value_loss ?? incident?.amount ?? 0;
@@ -258,6 +304,12 @@ export default function ClaimView({ data }: ClaimViewProps) {
   const [copyEmailTo, setCopyEmailTo] = useState('');
   const [sendingCopy, setSendingCopy] = useState(false);
   const [copySendResult, setCopySendResult] = useState('');
+  const [manualPassengerName, setManualPassengerName] = useState('');
+  const [manualPassengerEmail, setManualPassengerEmail] = useState('');
+  const [manualReferenceNumber, setManualReferenceNumber] = useState('');
+  const [manualTravelDate, setManualTravelDate] = useState('');
+  const [manualDepartureAirport, setManualDepartureAirport] = useState('');
+  const [manualArrivalAirport, setManualArrivalAirport] = useState('');
   const [flightStatus, setFlightStatus] = useState<any>(null);
   const [loadingFlightStatus, setLoadingFlightStatus] = useState(false);
 
@@ -308,7 +360,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
       if (!res.ok) throw new Error(payload?.error || 'Failed to generate letter');
 
       const rawLetter = payload?.letter || '';
-      const subject = buildSuggestedSubject(incident);
+      const subject = buildSuggestedSubject(effectiveIncident);
       const finalLetter = rawLetter.startsWith('Subject:') ? rawLetter : `${subject}\n\n${rawLetter}`;
 
       setGeneratedLetter(finalLetter);
@@ -345,7 +397,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
           .split('\n')
           .find((line) => line.startsWith('Subject:'))
           ?.replace(/^Subject:\s*/, '') ||
-        buildSuggestedSubject(incident).replace(/^Subject:\s*/, '');
+        buildSuggestedSubject(effectiveIncident).replace(/^Subject:\s*/, '');
 
       const res = await fetch('/api/send-claim-letter', {
         method: 'POST',
@@ -389,7 +441,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
           .split('\n')
           .find((line) => line.startsWith('Subject:'))
           ?.replace(/^Subject:\s*/, '') ||
-        buildSuggestedSubject(incident).replace(/^Subject:\s*/, '');
+        buildSuggestedSubject(effectiveIncident).replace(/^Subject:\s*/, '');
 
       const res = await fetch('/api/send-claim-letter', {
         method: 'POST',
@@ -619,7 +671,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
                     Download TXT
                   </button>
                   <button
-                    onClick={() => downloadLetterAsPdf(generatedLetter, incident)}
+                    onClick={() => downloadLetterAsPdf(generatedLetter, effectiveIncident)}
                     style={secondaryBtn}
                   >
                     Download PDF
