@@ -8,7 +8,7 @@ export const revalidate = 0;
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { language, incident, expenses, documents, flightStatus } = body || {};
+    const { language, tone, incident, expenses, documents, flightStatus } = body || {};
 
     if (!language || !incident) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     const eligibility = checkClaimEligibility(incident, expenses || []);
     const prompt = buildClaimLetterPrompt({
       language,
+      tone: tone || 'standard',
       incident,
       expenses: expenses || [],
       documents: documents || [],
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1400,
+        max_tokens: 1200,
         temperature: 0.2,
         messages: [{ role: 'user', content: prompt }],
       }),

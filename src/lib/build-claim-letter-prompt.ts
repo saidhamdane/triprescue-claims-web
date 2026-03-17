@@ -1,5 +1,6 @@
 type Input = {
   language: 'en' | 'ar' | 'es';
+  tone?: 'short' | 'standard' | 'legal';
   incident: any;
   expenses: any[];
   documents: any[];
@@ -15,6 +16,7 @@ type Input = {
 
 export function buildClaimLetterPrompt({
   language,
+  tone = 'standard',
   incident,
   expenses,
   documents,
@@ -25,29 +27,55 @@ export function buildClaimLetterPrompt({
 
   const langInstruction =
     language === 'ar'
-      ? 'Write the letter in formal Arabic.'
+      ? 'Write the letter in formal professional Arabic.'
       : language === 'es'
-      ? 'Write the letter in formal Spanish.'
-      : 'Write the letter in formal English.';
+      ? 'Write the letter in formal professional Spanish.'
+      : 'Write the letter in formal professional English.';
+
+  const toneInstruction =
+    tone === 'short'
+      ? 'Keep the letter concise, practical, and under 250 words if possible.'
+      : tone === 'legal'
+      ? 'Use a stronger legal-professional tone, but do not overclaim or invent rights.'
+      : 'Use a balanced professional tone suitable for an airline claims department.';
 
   const legalInstruction =
     eligibility.framework === 'EU261'
-      ? 'Mention EU261 carefully and only as potentially applicable based on the available facts. Do not overclaim.'
+      ? 'If appropriate, mention EU261 carefully as a possible basis for compensation. Do not overstate certainty.'
       : eligibility.framework === 'Montreal Convention'
-      ? 'Mention baggage compensation rules and the Montreal Convention carefully where appropriate.'
+      ? 'If appropriate, mention baggage compensation principles and the Montreal Convention carefully.'
       : 'Use general professional complaint language without inventing legal entitlements.';
 
+  const passengerName =
+    incident?.passenger_name ||
+    incident?.full_name ||
+    incident?.user_name ||
+    incident?.name ||
+    '[Passenger Name]';
+
+  const passengerEmail =
+    incident?.email ||
+    incident?.passenger_email ||
+    '[Passenger Email]';
+
+  const requestedAmount = Number(incident?.claim_amount || 0);
+  const currency = incident?.currency || 'USD';
+  const docsCount = (documents || []).length;
+
   return `
-You are an expert airline claim assistant.
+You are an expert airline claims writer.
 
 ${langInstruction}
+${toneInstruction}
 
-Write a polished, professional, ready-to-send airline claim letter.
+Write a polished, realistic, ready-to-send claim letter.
 Do not use markdown.
+Do not use bullet points unless absolutely necessary.
 Do not invent facts.
 Do not overstate legal certainty.
-Use a firm but professional tone.
-Request a written response within 14 days.
+Do not mention internal AI analysis.
+Avoid repetitive wording.
+Keep the structure clean and readable.
 
 Legal guidance:
 ${legalInstruction}
@@ -59,6 +87,10 @@ Eligibility summary:
 - Confidence: ${eligibility.confidence}
 - Missing info: ${(eligibility.missingInfo || []).join(', ') || 'None'}
 
+Passenger details:
+- Name: ${passengerName}
+- Email: ${passengerEmail}
+
 Incident details:
 - Incident type: ${incident?.type || 'N/A'}
 - Title: ${incident?.title || 'N/A'}
@@ -66,19 +98,24 @@ Incident details:
 - Airline: ${incident?.airline || 'N/A'}
 - Flight number: ${incident?.flight_number || 'N/A'}
 - Booking / reference number: ${incident?.reference_number || 'N/A'}
-- Claim amount: ${incident?.claim_amount || 0} ${incident?.currency || 'USD'}
-- Additional expenses total: ${totalExpenses} ${incident?.currency || 'USD'}
-- Number of supporting documents: ${(documents || []).length}
+- Claim amount requested: ${requestedAmount} ${currency}
+- Additional expenses total: ${totalExpenses} ${currency}
+- Supporting documents count: ${docsCount}
 
 Flight verification data:
 ${flightStatus ? JSON.stringify(flightStatus, null, 2) : 'No live flight verification available'}
 
 Requirements:
-1. Include a subject line
-2. Clearly describe the incident
-3. Request compensation or reimbursement appropriate to the case
-4. Mention that supporting documents/evidence are attached or available
-5. Request a written reply within 14 days
-6. End with a formal sign-off
+1. Start with a clean subject line beginning with "Subject:"
+2. Address the airline claims team professionally
+3. Briefly explain the incident
+4. State the requested compensation or reimbursement clearly
+5. Mention that supporting documents are attached or available
+6. Request a written response within 14 days
+7. End with a professional sign-off
+8. Use placeholders only when necessary
+9. Keep the wording natural and credible for a real complaint email
+
+Return only the final letter.
 `;
 }

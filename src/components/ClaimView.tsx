@@ -112,6 +112,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
 
   const [openLetterModal, setOpenLetterModal] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar' | 'es'>('en');
+  const [letterTone, setLetterTone] = useState<'short' | 'standard' | 'legal'>('standard');
   const [loadingLetter, setLoadingLetter] = useState(false);
   const [generatedLetter, setGeneratedLetter] = useState('');
   const [copied, setCopied] = useState(false);
@@ -405,6 +406,21 @@ export default function ClaimView({ data }: ClaimViewProps) {
                 <button onClick={() => setLanguage('en')} style={langBtn(language === 'en')}>🇬🇧 English</button>
                 <button onClick={() => setLanguage('ar')} style={langBtn(language === 'ar')}>🇸🇦 العربية</button>
                 <button onClick={() => setLanguage('es')} style={langBtn(language === 'es')}>🇪🇸 Español</button>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>Select tone</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button onClick={() => setLetterTone('short')} style={langBtn(letterTone === 'short')}>
+                    Short
+                  </button>
+                  <button onClick={() => setLetterTone('standard')} style={langBtn(letterTone === 'standard')}>
+                    Standard
+                  </button>
+                  <button onClick={() => setLetterTone('legal')} style={langBtn(letterTone === 'legal')}>
+                    Legal
+                  </button>
+                </div>
               </div>
             </div>
 
