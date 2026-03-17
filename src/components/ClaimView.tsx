@@ -1,5 +1,7 @@
 'use client';
 
+
+import { jsPDF } from 'jspdf';
 import { useMemo, useState } from 'react';
 import { buildSuggestedSubject, humanEligibilityStatus } from '../lib/human-eligibility';
 
@@ -99,6 +101,64 @@ function downloadLetterAsTxt(letter: string, incident: any) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+    
+function downloadLetterAsPdf(letter: string, incident: any) {
+  if (!letter) return;
+
+  const doc = new jsPDF({
+    unit: 'pt',
+    format: 'a4',
+  });
+
+  const margin = 40;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxWidth = pageWidth - margin * 2;
+
+  const title = incident?.title || incident?.type || 'Claim Letter';
+  const fileBase = String(title)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '') || 'claim-letter';
+
+  doc.setFillColor(10, 18, 40);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('TripRescue Claim Letter', margin, 36);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(180, 190, 210);
+  doc.text(`Incident: ${title}`, margin, 56);
+
+  doc.setTextColor(235, 240, 255);
+  doc.setFontSize(11);
+
+  const lines = doc.splitTextToSize(letter, maxWidth);
+
+  let y = 84;
+  const lineHeight = 16;
+
+  for (const line of lines) {
+    if (y > pageHeight - 50) {
+      doc.addPage();
+      doc.setFillColor(10, 18, 40);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+      doc.setTextColor(235, 240, 255);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      y = 40;
+    }
+
+    doc.text(String(line), margin, y);
+    y += lineHeight;
+  }
+
+  doc.save(`${fileBase}-claim-letter.pdf`);
 }
 
 export default function ClaimView({ data }: ClaimViewProps) {
@@ -481,7 +541,15 @@ export default function ClaimView({ data }: ClaimViewProps) {
                 <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button onClick={copyLetter} style={secondaryBtn}>{copied ? 'Copied' : 'Copy'}</button>
-                    <button onClick={() => downloadLetterAsTxt(generatedLetter, incident)} style={secondaryBtn}>Download TXT</button>
+                    <button onClick={() => downloadLetterAsTxt(generatedLetter, incident)} style={secondaryBtn}>
+                    Download TXT
+                  </button>
+                  <button
+                    onClick={() => downloadLetterAsPdf(generatedLetter, incident)}
+                    style={secondaryBtn}
+                  >
+                    Download PDF
+                  </button>
                     <button onClick={generateLetter} style={secondaryBtn}>Regenerate</button>
                   </div>
 
