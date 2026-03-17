@@ -120,6 +120,9 @@ export default function ClaimView({ data }: ClaimViewProps) {
   const [emailTo, setEmailTo] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [sendResult, setSendResult] = useState('');
+  const [copyEmailTo, setCopyEmailTo] = useState('');
+  const [sendingCopy, setSendingCopy] = useState(false);
+  const [copySendResult, setCopySendResult] = useState('');
   const [flightStatus, setFlightStatus] = useState<any>(null);
   const [loadingFlightStatus, setLoadingFlightStatus] = useState(false);
 
@@ -193,11 +196,20 @@ export default function ClaimView({ data }: ClaimViewProps) {
     try {
       setSendingEmail(true);
       setSendResult('');
-      if (!emailTo) throw new Error('Enter recipient email first');
-      if (!generatedLetter) throw new Error('Generate letter first');
+
+      if (!emailTo) {
+        throw new Error('Enter recipient email first');
+      }
+
+      if (!generatedLetter) {
+        throw new Error('Generate letter first');
+      }
 
       const subjectLine =
-        generatedLetter.split('\n').find((line) => line.startsWith('Subject:'))?.replace(/^Subject:\s*/, '') ||
+        generatedLetter
+          .split('\n')
+          .find((line) => line.startsWith('Subject:'))
+          ?.replace(/^Subject:\s*/, '') ||
         buildSuggestedSubject(incident).replace(/^Subject:\s*/, '');
 
       const res = await fetch('/api/send-claim-letter', {
@@ -211,13 +223,60 @@ export default function ClaimView({ data }: ClaimViewProps) {
       });
 
       const payload = await res.json();
-      if (!res.ok) throw new Error(payload?.error || 'Failed to send email');
+
+      if (!res.ok) {
+        throw new Error(payload?.error || 'Failed to send email');
+      }
 
       setSendResult('Letter sent successfully');
-    } catch (err: any) {
+    } catch (err) {
       setSendResult(err?.message || 'Failed to send email');
     } finally {
       setSendingEmail(false);
+    }
+  }
+
+  async function sendCopyLetter() {
+    try {
+      setSendingCopy(true);
+      setCopySendResult('');
+
+      if (!copyEmailTo) {
+        throw new Error('Enter your email first');
+      }
+
+      if (!generatedLetter) {
+        throw new Error('Generate letter first');
+      }
+
+      const subjectLine =
+        generatedLetter
+          .split('\n')
+          .find((line) => line.startsWith('Subject:'))
+          ?.replace(/^Subject:\s*/, '') ||
+        buildSuggestedSubject(incident).replace(/^Subject:\s*/, '');
+
+      const res = await fetch('/api/send-claim-letter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: copyEmailTo,
+          subject: '[Copy] ' + subjectLine,
+          letter: generatedLetter,
+        }),
+      });
+
+      const payload = await res.json();
+
+      if (!res.ok) {
+        throw new Error(payload?.error || 'Failed to send copy');
+      }
+
+      setCopySendResult('Copy sent successfully');
+    } catch (err) {
+      setCopySendResult(err?.message || 'Failed to send copy');
+    } finally {
+      setSendingCopy(false);
     }
   }
 
@@ -430,9 +489,33 @@ export default function ClaimView({ data }: ClaimViewProps) {
                       {sendingEmail ? 'Sending...' : 'Send Email'}
                     </button>
                     {sendResult && (
-                      <div style={{ marginTop: 10, color: '#cbd5e1' }}>{sendResult}</div>
-                    )}
-                  </div>
+                    <div style={{ marginTop: 10, color: '#cbd5e1' }}>{sendResult}</div>
+                  )}
+                </div>
+
+                <div style={{ ...card, marginTop: 12 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>Send copy to me</div>
+                  <input
+                    value={copyEmailTo}
+                    onChange={(e) => setCopyEmailTo(e.target.value)}
+                    placeholder="your@email.com"
+                    style={{
+                      width: '100%',
+                      background: '#020617',
+                      color: '#fff',
+                      border: '1px solid #334155',
+                      borderRadius: 12,
+                      padding: 12,
+                      marginBottom: 10,
+                    }}
+                  />
+                  <button onClick={sendCopyLetter} disabled={sendingCopy} style={primaryBtn}>
+                    {sendingCopy ? 'Sending copy...' : 'Send Copy'}
+                  </button>
+                  {copySendResult && (
+                    <div style={{ marginTop: 10, color: '#cbd5e1' }}>{copySendResult}</div>
+                  )}
+                </div>
                 </div>
               </div>
             )}
