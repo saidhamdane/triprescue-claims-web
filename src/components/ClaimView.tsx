@@ -103,6 +103,78 @@ function downloadLetterAsTxt(letter: string, incident: any) {
   URL.revokeObjectURL(url);
 }
     
+function getPassengerName(incident: any) {
+  return (
+    incident?.passenger_name ||
+    incident?.full_name ||
+    incident?.user_name ||
+    incident?.name ||
+    incident?.traveler_name ||
+    ''
+  );
+}
+
+function getPassengerEmail(incident: any) {
+  return (
+    incident?.passenger_email ||
+    incident?.email ||
+    incident?.user_email ||
+    incident?.traveler_email ||
+    ''
+  );
+}
+
+function getFormattedDate() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function normalizeGeneratedLetter(letter: string, incident: any) {
+  if (!letter) return letter;
+
+  const passengerName = getPassengerName(incident) || 'Passenger';
+  const passengerEmail = getPassengerEmail(incident) || 'passenger@email.com';
+  const formattedDate = getFormattedDate();
+
+  let out = letter;
+
+  out = out.replace(/\[Passenger Name\]/g, passengerName);
+  out = out.replace(/\[Passenger Email\]/g, passengerEmail);
+  out = out.replace(/\[Date\]/g, formattedDate);
+
+  return out;
+}
+
+function buildBetterSubject(incident: any) {
+  const incidentType =
+    incident?.title ||
+    incident?.type ||
+    'Travel Claim';
+
+  const flight = incident?.flight_number || 'No-Flight';
+  const airline = incident?.airline || '';
+
+  const cleanType = String(incidentType)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (m: string) => m.toUpperCase());
+
+  return `Subject: ${cleanType} - Flight ${flight}${airline ? ' - ' + airline : ''}`;
+}
+
+function ensureSubjectLine(letter: string, incident: any) {
+  if (!letter) return letter;
+  const betterSubject = buildBetterSubject(incident);
+
+  if (/^Subject:/m.test(letter)) {
+    return letter.replace(/^Subject:.*$/m, betterSubject);
+  }
+
+  return `${betterSubject}\n\n${letter}`;
+}
+
 function downloadLetterAsPdf(letter: string, incident: any) {
   if (!letter) return;
 
@@ -164,6 +236,8 @@ function downloadLetterAsPdf(letter: string, incident: any) {
 export default function ClaimView({ data }: ClaimViewProps) {
   const { incident, expenses, documents } = data;
   const safeDocuments = dedupeDocuments(documents || []);
+  const autoPassengerName = getPassengerName(incident);
+  const autoPassengerEmail = getPassengerEmail(incident);
   const imageDocs = safeDocuments.filter(isProbablyImage);
   const otherDocs = safeDocuments.filter((doc) => !isProbablyImage(doc));
   const amount = incident?.claim_amount ?? incident?.estimated_value_loss ?? incident?.amount ?? 0;
@@ -582,7 +656,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
                   <input
                     value={copyEmailTo}
                     onChange={(e) => setCopyEmailTo(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder={autoPassengerEmail || "your@email.com"}
                     style={{
                       width: '100%',
                       background: '#020617',
