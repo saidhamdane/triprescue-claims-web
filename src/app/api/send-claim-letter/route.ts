@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
       from,
       to,
       subject,
-      replyTo: replyTo || undefined,
       text: letter,
+      replyTo: replyTo || undefined,
     });
 
     return NextResponse.json({ ok: true, result });
