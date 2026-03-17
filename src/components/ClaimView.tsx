@@ -17,6 +17,29 @@ function formatIncidentType(value?: string) {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function dedupeDocuments(docs: any[]) {
+  const seen = new Set();
+  const out: any[] = [];
+
+  for (const doc of docs || []) {
+    const key = [
+      doc?.id || '',
+      doc?.file_url || '',
+      doc?.name || doc?.file_name || ''
+    ].join('|');
+
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(doc);
+  }
+
+  return out;
+}
+
+function isProbablyArabic(text: string) {
+  return /[\u0600-\u06FF]/.test(text || '');
+}
+
 function isProbablyImage(doc: any) {
   const url = String(doc?.file_url ?? '').toLowerCase();
   const name = String(doc?.name ?? doc?.file_name ?? '').toLowerCase();
@@ -80,8 +103,9 @@ function downloadLetterAsTxt(letter: string, incident: any) {
 
 export default function ClaimView({ data }: ClaimViewProps) {
   const { incident, expenses, documents } = data;
-  const imageDocs = documents.filter(isProbablyImage);
-  const otherDocs = documents.filter((doc) => !isProbablyImage(doc));
+  const safeDocuments = dedupeDocuments(documents || []);
+  const imageDocs = safeDocuments.filter(isProbablyImage);
+  const otherDocs = safeDocuments.filter((doc) => !isProbablyImage(doc));
   const amount = incident?.claim_amount ?? incident?.estimated_value_loss ?? incident?.amount ?? 0;
 
   const eligibility = useMemo(() => localEligibility(incident, expenses), [incident, expenses]);
@@ -303,7 +327,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
               </div>
             )}
 
-            {documents.length === 0 && <div style={emptyBox}>No documents attached.</div>}
+            {safeDocuments.length === 0 && <div style={emptyBox}>No documents attached.</div>}
           </section>
         </div>
       </div>
