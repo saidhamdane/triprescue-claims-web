@@ -1,0 +1,13 @@
+nohup: ignoring input
+
+> triprescue-claims-web@2.1.0 dev
+> next dev --port 3000
+
+[32mready[39m - started server on 0.0.0.0:3000, url: http://localhost:3000
+[36minfo[39m  - Loaded env from /data/data/com.termux/files/home/projects/triprescue-claims-web/.env.local
+[33mwarn[39m  - [1mYou have enabled experimental feature (appDir) in next.config.js.[22m
+[33mwarn[39m  - Experimental features are not covered by semver, and may cause unexpected or broken application behavior. Use at your own risk.
+
+[36minfo[39m  - Thank you for testing `appDir` please leave your feedback at https://nextjs.link/app-feedback
+[36minfo[39m  - Using wasm build of next-swc
+[?25h

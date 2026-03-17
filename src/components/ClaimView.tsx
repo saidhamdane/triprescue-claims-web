@@ -207,6 +207,7 @@ export default function ClaimView({ data }: ClaimViewProps) {
           to: emailTo,
           subject: subjectLine,
           letter: generatedLetter,
+          incidentId: incident?.id || null,
         }),
       });
 
