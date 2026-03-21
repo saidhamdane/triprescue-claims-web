@@ -4,7 +4,6 @@ import { Resend } from 'resend';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// نوع الملف القادم
 type IncomingFile = {
   id?: string | null;
   name?: string | null;
@@ -12,7 +11,6 @@ type IncomingFile = {
   type?: string | null;
 };
 
-// تحويل الصورة من URL → attachment لـ Resend
 async function fileToAttachment(file: IncomingFile) {
   const url = String(file?.url || '').trim();
   if (!url) return null;
@@ -67,7 +65,7 @@ export async function POST(req: NextRequest) {
       to,
       subject,
       text: letter,
-      reply_to: replyTo || undefined,
+      replyTo: replyTo || undefined,
       attachments,
     });
 
