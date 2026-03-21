@@ -1,9 +1,20 @@
+import SiteNavbar from '@/components/SiteNavbar';
+import SiteFooter from '@/components/SiteFooter';
+
 export default function TermsPage() {
   return (
-    <main style={{ maxWidth: 800, margin: '40px auto', padding: 20 }}>
-      <h1>Terms of Service</h1>
-      <p>TripRescue AI helps users prepare and send travel claims. It does not replace legal advice.</p>
-      <p>Users are responsible for the accuracy of uploaded evidence and submitted information.</p>
-    </main>
+    <>
+      <SiteNavbar />
+      <main style={{ maxWidth: 900, margin: '40px auto', padding: 16 }}>
+        <h1>Terms of Service</h1>
+        <p>
+          TripRescue AI helps users generate and send travel claims. It does not replace legal advice.
+        </p>
+        <p>
+          Users remain responsible for the accuracy of claim data, uploaded files, and submitted evidence.
+        </p>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

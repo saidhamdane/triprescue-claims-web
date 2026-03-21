@@ -1,25 +1,138 @@
-import { redirect } from 'next/navigation';
+import SiteNavbar from '@/components/SiteNavbar';
+import SiteFooter from '@/components/SiteFooter';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-export default function HomePage({ searchParams }: { searchParams: { token?: string } }) {
-  if (searchParams?.token) { redirect(`/claim/${searchParams.token}`); }
+function FeatureCard({ title, text }: { title: string; text: string }) {
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ maxWidth: '420px', width: '100%', textAlign: 'center' }}>
-        <div style={{ width: '72px', height: '72px', borderRadius: '18px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" /><circle cx="12" cy="10" r="3" /></svg>
-        </div>
-        <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '0 0 8px' }}>TripRescue</h1>
-        <p style={{ fontSize: '13px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 32px' }}>Travel Claims Platform</p>
-        <div style={{ background: 'white', borderRadius: '16px', padding: '32px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.7, margin: '0 0 20px' }}>Use the full link with a token to view a specific claim.</p>
-          <div style={{ background: '#f1f5f9', borderRadius: '10px', padding: '12px 16px', border: '1px solid #e2e8f0' }}>
-            <code style={{ fontSize: '12px', color: '#64748b', fontFamily: "'JetBrains Mono', monospace" }}>claims.triprescue.site/?token=abc123</code>
+    <div
+      style={{
+        border: '1px solid #e5e7eb',
+        borderRadius: 20,
+        padding: 24,
+        background: '#fff',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+      }}
+    >
+      <h3 style={{ marginTop: 0, fontSize: 20, color: '#111827' }}>{title}</h3>
+      <p style={{ color: '#6b7280', lineHeight: 1.7 }}>{text}</p>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <>
+      <SiteNavbar />
+      <main style={{ background: '#f9fafb', minHeight: '100vh' }}>
+        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 16px 40px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: 32,
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 12px',
+                  borderRadius: 999,
+                  background: '#e0e7ff',
+                  color: '#3730a3',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  marginBottom: 18,
+                }}
+              >
+                Travel Claims Platform
+              </div>
+              <h1 style={{ fontSize: 48, lineHeight: 1.1, margin: 0, color: '#111827', fontWeight: 900 }}>
+                Recover travel compensation faster with TripRescue AI
+              </h1>
+              <p style={{ fontSize: 18, color: '#6b7280', lineHeight: 1.8, marginTop: 18 }}>
+                Generate claim letters, attach supporting evidence, send professional emails,
+                and track every claim in one place.
+              </p>
+
+              <div style={{ display: 'flex', gap: 14, marginTop: 24, flexWrap: 'wrap' }}>
+                <a
+                  href="/dashboard/claims"
+                  style={{
+                    textDecoration: 'none',
+                    background: '#111827',
+                    color: '#fff',
+                    padding: '14px 20px',
+                    borderRadius: 14,
+                    fontWeight: 700,
+                  }}
+                >
+                  Open Dashboard
+                </a>
+                <a
+                  href="/pricing"
+                  style={{
+                    textDecoration: 'none',
+                    background: '#fff',
+                    color: '#111827',
+                    padding: '14px 20px',
+                    borderRadius: 14,
+                    fontWeight: 700,
+                    border: '1px solid #d1d5db',
+                  }}
+                >
+                  View Pricing
+                </a>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: '#fff',
+                border: '1px solid #e5e7eb',
+                borderRadius: 24,
+                padding: 24,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.06)',
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 16, color: '#111827' }}>
+                Why teams choose TripRescue AI
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 18, color: '#6b7280', lineHeight: 2 }}>
+                <li>Claim generation in seconds</li>
+                <li>Evidence uploads and attachments</li>
+                <li>Email delivery with tracking</li>
+                <li>Dashboard for sent claims and statuses</li>
+                <li>Built for travel claims and escalation workflows</li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </div>
-    </main>
+        </section>
+
+        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px 64px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: 18,
+            }}
+          >
+            <FeatureCard
+              title="AI claim letters"
+              text="Generate structured claim letters for delays, lost baggage, cancellations, and more."
+            />
+            <FeatureCard
+              title="Evidence handling"
+              text="Upload and send supporting files with your claim package in a clean, professional flow."
+            />
+            <FeatureCard
+              title="Delivery tracking"
+              text="Track sent emails, attachment counts, claim statuses, and outcomes from one dashboard."
+            />
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </>
   );
 }
