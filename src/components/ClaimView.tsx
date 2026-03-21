@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 'use client';
 
 
@@ -736,32 +737,32 @@ export default function ClaimView({ data }: ClaimViewProps) {
   );
 }
 
-const card: React.CSSProperties = {
+const card: CSSProperties = {
   background: 'rgba(30,41,59,0.75)',
   border: '1px solid #1e293b',
   borderRadius: 18,
   padding: 16,
 };
 
-const label: React.CSSProperties = {
+const label: CSSProperties = {
   color: '#94a3b8',
   fontSize: 14,
   marginBottom: 6,
 };
 
-const value: React.CSSProperties = {
+const value: CSSProperties = {
   color: '#fff',
   fontSize: 18,
   fontWeight: 600,
 };
 
-const sectionTitle: React.CSSProperties = {
+const sectionTitle: CSSProperties = {
   fontSize: 28,
   fontWeight: 700,
   marginBottom: 14,
 };
 
-const emptyBox: React.CSSProperties = {
+const emptyBox: CSSProperties = {
   background: 'rgba(30,41,59,0.45)',
   border: '1px solid #1e293b',
   borderRadius: 18,
@@ -769,7 +770,7 @@ const emptyBox: React.CSSProperties = {
   color: '#94a3b8',
 };
 
-const primaryBtn: React.CSSProperties = {
+const primaryBtn: CSSProperties = {
   background: '#2563eb',
   color: '#fff',
   border: 'none',
@@ -780,7 +781,7 @@ const primaryBtn: React.CSSProperties = {
   cursor: 'pointer',
 };
 
-const secondaryBtn: React.CSSProperties = {
+const secondaryBtn: CSSProperties = {
   background: '#111827',
   color: '#e2e8f0',
   border: '1px solid #334155',
@@ -791,7 +792,7 @@ const secondaryBtn: React.CSSProperties = {
   cursor: 'pointer',
 };
 
-function langBtn(active: boolean): React.CSSProperties {
+function langBtn(active: boolean): CSSProperties {
   return {
     background: active ? '#2563eb' : '#111827',
     color: '#fff',
