@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// نوع الملف القادم
 type IncomingFile = {
   id?: string | null;
   name?: string | null;
@@ -11,6 +12,7 @@ type IncomingFile = {
   type?: string | null;
 };
 
+// تحويل الصورة من URL → attachment لـ Resend
 async function fileToAttachment(file: IncomingFile) {
   const url = String(file?.url || '').trim();
   if (!url) return null;
@@ -53,16 +55,19 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(resendKey);
 
     const safeFiles: IncomingFile[] = Array.isArray(files) ? files : [];
+
     const attachments = (
       await Promise.all(safeFiles.map(fileToAttachment))
-    ).filter(Boolean);
+    ).filter(
+      (item): item is { filename: string; content: string } => item !== null
+    );
 
     const result = await resend.emails.send({
       from,
       to,
       subject,
       text: letter,
-      replyTo: replyTo || undefined,
+      reply_to: replyTo || undefined,
       attachments,
     });
 
