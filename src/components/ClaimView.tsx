@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react';
 'use client';
 
-
 import { jsPDF } from 'jspdf';
 import { useMemo, useState } from 'react';
 import { buildSuggestedSubject, humanEligibilityStatus } from '../lib/human-eligibility';
@@ -273,10 +272,19 @@ function downloadLetterAsPdf(letter: string, incident: any) {
 }
 
 export default function ClaimView({ data }: ClaimViewProps) {
+
+  const [manualPassengerName, setManualPassengerName] = useState('');
+  const [manualPassengerEmail, setManualPassengerEmail] = useState('');
+  const [manualReferenceNumber, setManualReferenceNumber] = useState('');
+  const [manualTravelDate, setManualTravelDate] = useState('');
+  const [manualDepartureAirport, setManualDepartureAirport] = useState('');
+  const [manualArrivalAirport, setManualArrivalAirport] = useState('');
+
   const { incident, expenses, documents } = data;
   const safeDocuments = dedupeDocuments(documents || []);
   const effectiveIncident = buildEffectiveIncident(incident, {
-    manualPassengerName,
+
+manualPassengerName,
     manualPassengerEmail,
     manualReferenceNumber,
     manualTravelDate,
@@ -305,12 +313,6 @@ export default function ClaimView({ data }: ClaimViewProps) {
   const [copyEmailTo, setCopyEmailTo] = useState('');
   const [sendingCopy, setSendingCopy] = useState(false);
   const [copySendResult, setCopySendResult] = useState('');
-  const [manualPassengerName, setManualPassengerName] = useState('');
-  const [manualPassengerEmail, setManualPassengerEmail] = useState('');
-  const [manualReferenceNumber, setManualReferenceNumber] = useState('');
-  const [manualTravelDate, setManualTravelDate] = useState('');
-  const [manualDepartureAirport, setManualDepartureAirport] = useState('');
-  const [manualArrivalAirport, setManualArrivalAirport] = useState('');
   const [flightStatus, setFlightStatus] = useState<any>(null);
   const [loadingFlightStatus, setLoadingFlightStatus] = useState(false);
 
