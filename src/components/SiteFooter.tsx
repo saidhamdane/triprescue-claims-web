@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 export default function SiteFooter() {
   return (
     <footer

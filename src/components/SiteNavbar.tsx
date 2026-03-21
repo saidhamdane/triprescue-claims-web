@@ -1,5 +1,6 @@
+import type { CSSProperties } from 'react';
 export default function SiteNavbar() {
-  const linkStyle: React.CSSProperties = {
+  const linkStyle: CSSProperties = {
     textDecoration: 'none',
     color: '#374151',
     fontWeight: 600,

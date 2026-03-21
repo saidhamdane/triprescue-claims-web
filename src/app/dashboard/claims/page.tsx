@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
@@ -131,7 +132,7 @@ export default async function ClaimsDashboardPage() {
   );
 }
 
-const th: React.CSSProperties = {
+const th: CSSProperties = {
   textAlign: 'left',
   padding: '14px 16px',
   fontSize: 13,
@@ -139,14 +140,14 @@ const th: React.CSSProperties = {
   fontWeight: 700,
 };
 
-const td: React.CSSProperties = {
+const td: CSSProperties = {
   padding: '14px 16px',
   fontSize: 14,
   color: '#111827',
   verticalAlign: 'top',
 };
 
-const tdMono: React.CSSProperties = {
+const tdMono: CSSProperties = {
   ...td,
   fontFamily: 'monospace',
   fontSize: 12,
