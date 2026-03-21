@@ -51,14 +51,27 @@ export async function POST(req: NextRequest) {
     }
 
     const resend = new Resend(resendKey);
-
     const safeFiles: IncomingFile[] = Array.isArray(files) ? files : [];
 
-    const attachments = (
-      await Promise.all(safeFiles.map(fileToAttachment))
-    ).filter(
-      (item): item is { filename: string; content: string } => item !== null
+    const settled = await Promise.allSettled(
+      safeFiles.map((file) => fileToAttachment(file))
     );
+
+    const attachments = settled
+      .filter(
+        (
+          item
+        ): item is PromiseFulfilledResult<{ filename: string; content: string } | null> =>
+          item.status === 'fulfilled'
+      )
+      .map((item) => item.value)
+      .filter(
+        (item): item is { filename: string; content: string } => item !== null
+      );
+
+    const failedAttachments = settled.filter(
+      (item) => item.status === 'rejected'
+    ).length;
 
     const result = await resend.emails.send({
       from,
@@ -72,6 +85,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       attachmentsCount: attachments.length,
+      failedAttachments,
       result,
     });
   } catch (error: any) {
