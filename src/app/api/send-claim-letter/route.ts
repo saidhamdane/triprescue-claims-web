@@ -4,6 +4,31 @@ import { Resend } from 'resend';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type IncomingFile = {
+  id?: string | null;
+  name?: string | null;
+  url?: string | null;
+  type?: string | null;
+};
+
+async function fileToAttachment(file: IncomingFile) {
+  const url = String(file?.url || '').trim();
+  if (!url) return null;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch attachment: ${url}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  return {
+    filename: String(file?.name || 'attachment'),
+    content: buffer.toString('base64'),
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const resendKey = process.env.RESEND_API_KEY;
@@ -16,7 +41,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { to, subject, letter, replyTo } = await req.json();
+    const { to, subject, letter, replyTo, files } = await req.json();
 
     if (!to || !subject || !letter) {
       return NextResponse.json(
@@ -27,15 +52,25 @@ export async function POST(req: NextRequest) {
 
     const resend = new Resend(resendKey);
 
+    const safeFiles: IncomingFile[] = Array.isArray(files) ? files : [];
+    const attachments = (
+      await Promise.all(safeFiles.map(fileToAttachment))
+    ).filter(Boolean);
+
     const result = await resend.emails.send({
       from,
       to,
       subject,
       text: letter,
       replyTo: replyTo || undefined,
+      attachments,
     });
 
-    return NextResponse.json({ ok: true, result });
+    return NextResponse.json({
+      ok: true,
+      attachmentsCount: attachments.length,
+      result,
+    });
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Email sending failed' },
