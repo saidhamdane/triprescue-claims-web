@@ -1,5 +1,5 @@
-import SiteNavbar from '@/components/SiteNavbar';
-import SiteFooter from '@/components/SiteFooter';
+import SiteNavbar from '../../components/SiteNavbar';
+import SiteFooter from '../../components/SiteFooter';
 
 function PlanCard({
   title,
