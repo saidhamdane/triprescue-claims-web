@@ -1,41 +1,44 @@
 import Link from 'next/link';
 
-export default function SiteFooter() {
-  const link = {
-    color: '#6b7280',
-    textDecoration: 'none',
-    fontSize: 13,
-  } as const;
+const link: React.CSSProperties = {
+  color: '#94a3b8',
+  textDecoration: 'none',
+  fontSize: 13,
+};
 
+export default function SiteFooter() {
   return (
     <footer
       style={{
-        borderTop: '1px solid #e5e7eb',
-        background: '#ffffff',
-        marginTop: 48,
+        marginTop: 72,
+        borderTop: '1px solid rgba(148,163,184,0.14)',
+        background: '#020617',
       }}
     >
       <div
         style={{
-          maxWidth: 1200,
+          maxWidth: 1240,
           margin: '0 auto',
-          padding: '18px 16px',
+          padding: '28px 18px',
           display: 'flex',
           justifyContent: 'space-between',
-          gap: 16,
-          flexWrap: 'wrap',
           alignItems: 'center',
+          gap: 18,
+          flexWrap: 'wrap',
         }}
       >
-        <div style={{ color: '#6b7280', fontSize: 13 }}>
-          © 2026 TripRescue AI. All rights reserved.
+        <div>
+          <div style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>TripRescue AI</div>
+          <div style={{ color: '#64748b', fontSize: 13, marginTop: 6 }}>
+            Recover travel compensation faster with AI-assisted claim workflows.
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <Link href="/pricing" style={link}>Pricing</Link>
+          <Link href="/contact" style={link}>Contact</Link>
           <Link href="/privacy" style={link}>Privacy</Link>
           <Link href="/terms" style={link}>Terms</Link>
-          <Link href="/contact" style={link}>Contact</Link>
         </div>
       </div>
     </footer>
