@@ -462,7 +462,7 @@ manualPassengerName,
         throw new Error(payload?.error || 'Failed to send copy');
       }
 
-      setCopySendResult('Copy sent successfully');
+      setCopySendResult('Internal copy sent successfully');
     } catch (err) {
       setCopySendResult(err?.message || 'Failed to send copy');
     } finally {
@@ -517,7 +517,7 @@ manualPassengerName,
             <p style={{ color: '#94a3b8', lineHeight: 1.6 }}>{eligibility.reason}</p>
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-              <button onClick={() => setOpenLetterModal(true)} style={primaryBtn}>✨ Generate AI Claim Letter</button>
+              <button onClick={() => setOpenLetterModal(true)} style={primaryBtn}>✨ Generate Premium AI Claim Letter</button>
               <button onClick={lookupFlight} style={secondaryBtn}>
                 {loadingFlightStatus ? 'Checking flight...' : 'Check Flight Status'}
               </button>
@@ -585,7 +585,7 @@ manualPassengerName,
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 9999 }}>
           <div style={{ width: '100%', maxWidth: 900, background: '#0f172a', border: '1px solid #334155', borderRadius: 24, padding: 24, maxHeight: '92vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 28, margin: 0 }}>Generate AI Claim Letter</h3>
+              <h3 style={{ fontSize: 28, margin: 0 }}>Generate Premium AI Claim Letter</h3>
               <button onClick={() => setOpenLetterModal(false)} style={secondaryBtn}>Close</button>
             </div>
 
@@ -683,11 +683,11 @@ manualPassengerName,
                   </div>
 
                   <div style={{ ...card }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>Send directly</div>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>Send to airline / insurer</div>
                     <input
                       value={emailTo}
                       onChange={(e) => setEmailTo(e.target.value)}
-                      placeholder="airline@example.com"
+                      placeholder="claims@airline.com"
                       style={{
                         width: '100%',
                         background: '#020617',
@@ -699,7 +699,7 @@ manualPassengerName,
                       }}
                     />
                     <button onClick={sendLetter} disabled={sendingEmail} style={primaryBtn}>
-                      {sendingEmail ? 'Sending...' : 'Send Email'}
+                      {sendingEmail ? 'Sending...' : 'Send claim now'}
                     </button>
                     {sendResult && (
                     <div style={{ marginTop: 10, color: '#cbd5e1' }}>{sendResult}</div>
@@ -707,7 +707,7 @@ manualPassengerName,
                 </div>
 
                 <div style={{ ...card, marginTop: 12 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8 }}>Send copy to me</div>
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>Send internal copy</div>
                   <input
                     value={copyEmailTo}
                     onChange={(e) => setCopyEmailTo(e.target.value)}
@@ -723,7 +723,7 @@ manualPassengerName,
                     }}
                   />
                   <button onClick={sendCopyLetter} disabled={sendingCopy} style={primaryBtn}>
-                    {sendingCopy ? 'Sending copy...' : 'Send Copy'}
+                    {sendingCopy ? 'Sending copy...' : 'Send internal copy'}
                   </button>
                   {copySendResult && (
                     <div style={{ marginTop: 10, color: '#cbd5e1' }}>{copySendResult}</div>
@@ -776,7 +776,7 @@ const primaryBtn: CSSProperties = {
   background: '#2563eb',
   color: '#fff',
   border: 'none',
-  borderRadius: 14,
+  borderRadius: 18,
   padding: '12px 18px',
   fontSize: 16,
   fontWeight: 700,
