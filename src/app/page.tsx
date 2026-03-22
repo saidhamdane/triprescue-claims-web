@@ -1,5 +1,6 @@
 import SiteNavbar from '../components/SiteNavbar';
 import SiteFooter from '../components/SiteFooter';
+import Link from 'next/link';
 
 function FeatureCard({ title, text }: { title: string; text: string }) {
   return (
@@ -22,6 +23,7 @@ export default function HomePage() {
   return (
     <>
       <SiteNavbar />
+
       <main style={{ background: '#f9fafb', minHeight: '100vh' }}>
         <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 16px 40px' }}>
           <div
@@ -38,7 +40,7 @@ export default function HomePage() {
                   display: 'inline-block',
                   padding: '8px 12px',
                   borderRadius: 999,
-                  background: '#e0e7ff',
+                  background: '#eef2ff',
                   color: '#3730a3',
                   fontWeight: 700,
                   fontSize: 13,
@@ -47,16 +49,34 @@ export default function HomePage() {
               >
                 Travel Claims Platform
               </div>
-              <h1 style={{ fontSize: 48, lineHeight: 1.1, margin: 0, color: '#111827', fontWeight: 900 }}>
+
+              <h1
+                style={{
+                  fontSize: 48,
+                  lineHeight: 1.1,
+                  margin: 0,
+                  color: '#111827',
+                  fontWeight: 900,
+                }}
+              >
                 Recover travel compensation faster with TripRescue AI
               </h1>
-              <p style={{ fontSize: 18, color: '#6b7280', lineHeight: 1.8, marginTop: 18 }}>
+
+              <p
+                style={{
+                  fontSize: 18,
+                  color: '#6b7280',
+                  lineHeight: 1.8,
+                  marginTop: 18,
+                  marginBottom: 24,
+                }}
+              >
                 Generate claim letters, attach supporting evidence, send professional emails,
                 and track every claim in one place.
               </p>
 
-              <div style={{ display: 'flex', gap: 14, marginTop: 24, flexWrap: 'wrap' }}>
-                <a
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <Link
                   href="/dashboard/claims"
                   style={{
                     textDecoration: 'none',
@@ -68,8 +88,9 @@ export default function HomePage() {
                   }}
                 >
                   Open Dashboard
-                </a>
-                <a
+                </Link>
+
+                <Link
                   href="/pricing"
                   style={{
                     textDecoration: 'none',
@@ -82,7 +103,7 @@ export default function HomePage() {
                   }}
                 >
                   View Pricing
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -91,14 +112,15 @@ export default function HomePage() {
                 background: '#fff',
                 border: '1px solid #e5e7eb',
                 borderRadius: 24,
-                padding: 24,
-                boxShadow: '0 8px 30px rgba(0,0,0,0.06)',
+                padding: 30,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
               }}
             >
               <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 16, color: '#111827' }}>
                 Why teams choose TripRescue AI
               </div>
-              <ul style={{ margin: 0, paddingLeft: 18, color: '#6b7280', lineHeight: 2 }}>
+
+              <ul style={{ color: '#6b7280', paddingLeft: 18, lineHeight: 2 }}>
                 <li>Claim generation in seconds</li>
                 <li>Evidence uploads and attachments</li>
                 <li>Email delivery with tracking</li>
@@ -127,11 +149,12 @@ export default function HomePage() {
             />
             <FeatureCard
               title="Delivery tracking"
-              text="Track sent emails, attachment counts, claim statuses, and outcomes from one dashboard."
+              text="Track sent claims, attachment counts, claim statuses, and outcomes from one dashboard."
             />
           </div>
         </section>
       </main>
+
       <SiteFooter />
     </>
   );
