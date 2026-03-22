@@ -8,6 +8,7 @@ function PriceCard({
   primary,
   cta,
   href,
+  badge,
 }: {
   name: string;
   price: string;
@@ -15,6 +16,7 @@ function PriceCard({
   primary?: boolean;
   cta: string;
   href: string;
+  badge?: string;
 }) {
   return (
     <div
@@ -26,7 +28,24 @@ function PriceCard({
         boxShadow: primary ? '0 10px 30px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.04)',
       }}
     >
-      <div style={{ color: '#111827', fontWeight: 800, fontSize: 20 }}>{name}</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+        <div style={{ color: '#111827', fontWeight: 800, fontSize: 20 }}>{name}</div>
+        {badge ? (
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '6px 10px',
+              borderRadius: 999,
+              background: '#eef2ff',
+              color: '#3730a3',
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            {badge}
+          </span>
+        ) : null}
+      </div>
       <div style={{ fontSize: 36, fontWeight: 900, color: '#111827', margin: '10px 0 16px' }}>
         {price}
       </div>
@@ -68,6 +87,20 @@ export default function PricingPage() {
             <p style={{ color: '#6b7280', fontSize: 16, marginTop: 12 }}>
               Choose the plan that fits your claim volume and workflow.
             </p>
+            <div
+              style={{
+                marginTop: 18,
+                display: 'inline-block',
+                padding: '8px 12px',
+                borderRadius: 999,
+                background: '#ecfeff',
+                color: '#155e75',
+                fontWeight: 700,
+                fontSize: 13,
+              }}
+            >
+              Pro is the fastest way to unlock direct email claim delivery
+            </div>
           </div>
 
           <div
@@ -93,6 +126,7 @@ export default function PricingPage() {
               name="Pro"
               price="€19/mo"
               primary
+              badge="Most Popular"
               points={[
                 'Send claims by email',
                 'Attachment support',

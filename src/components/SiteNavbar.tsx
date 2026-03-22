@@ -1,21 +1,22 @@
-import type { CSSProperties } from 'react';
+import Link from 'next/link';
+
 export default function SiteNavbar() {
-  const linkStyle: CSSProperties = {
-    textDecoration: 'none',
+  const navLink = {
     color: '#374151',
-    fontWeight: 600,
+    textDecoration: 'none',
     fontSize: 14,
-  };
+    fontWeight: 600,
+  } as const;
 
   return (
     <header
       style={{
+        width: '100%',
+        borderBottom: '1px solid #e5e7eb',
+        background: '#ffffff',
         position: 'sticky',
         top: 0,
-        zIndex: 50,
-        background: 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid #e5e7eb',
+        zIndex: 20,
       }}
     >
       <div
@@ -29,16 +30,31 @@ export default function SiteNavbar() {
           gap: 16,
         }}
       >
-        <a href="/" style={{ textDecoration: 'none', color: '#111827', fontWeight: 800, fontSize: 20 }}>
+        <Link
+          href="/"
+          style={{
+            textDecoration: 'none',
+            color: '#111827',
+            fontWeight: 800,
+            fontSize: 18,
+          }}
+        >
           TripRescue AI
-        </a>
+        </Link>
 
-        <nav style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <a href="/pricing" style={linkStyle}>Pricing</a>
-          <a href="/dashboard/claims" style={linkStyle}>Dashboard</a>
-          <a href="/contact" style={linkStyle}>Contact</a>
-          <a href="/privacy" style={linkStyle}>Privacy</a>
-          <a href="/terms" style={linkStyle}>Terms</a>
+        <nav
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Link href="/pricing" style={navLink}>Pricing</Link>
+          <Link href="/dashboard/claims" style={navLink}>Dashboard</Link>
+          <Link href="/contact" style={navLink}>Contact</Link>
+          <Link href="/privacy" style={navLink}>Privacy</Link>
+          <Link href="/terms" style={navLink}>Terms</Link>
         </nav>
       </div>
     </header>

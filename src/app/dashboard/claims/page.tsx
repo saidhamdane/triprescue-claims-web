@@ -21,6 +21,50 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+
+function UpgradeBanner() {
+  return (
+    <div
+      style={{
+        border: '1px solid #dbeafe',
+        background: '#eff6ff',
+        borderRadius: 18,
+        padding: 18,
+        marginBottom: 24,
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: 16,
+        alignItems: 'center',
+        flexWrap: 'wrap',
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#111827', marginBottom: 6 }}>
+          Unlock direct claim sending with Pro
+        </div>
+        <div style={{ color: '#475569', fontSize: 14, lineHeight: 1.7 }}>
+          Upgrade to send claims by email, manage attachments, and track delivery outcomes in one workflow.
+        </div>
+      </div>
+
+      <a
+        href="/pricing"
+        style={{
+          textDecoration: 'none',
+          background: '#111827',
+          color: '#fff',
+          padding: '12px 16px',
+          borderRadius: 12,
+          fontWeight: 700,
+          display: 'inline-block',
+        }}
+      >
+        View Plans
+      </a>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string }> = {
     sent: { bg: '#dcfce7', color: '#166534' },
@@ -89,6 +133,8 @@ export default async function ClaimsDashboardPage() {
 
   return (
     <main style={{ maxWidth: 1280, margin: '40px auto', padding: '0 16px' }}>
+      <UpgradeBanner />
+
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0, color: '#111827' }}>Claims Dashboard</h1>
         <p style={{ color: '#6b7280', marginTop: 8 }}>
