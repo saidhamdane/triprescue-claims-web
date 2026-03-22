@@ -328,13 +328,14 @@ export default async function ClaimsDashboardPage() {
                   <th style={th}>Attachments</th>
                   <th style={th}>Status</th>
                   <th style={th}>Sent At</th>
+                  <th style={th}>Token</th>
                   <th style={th}>Open</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row: any) => {
                   const token = shareMap[row.incident_id];
-                  const href = token ? `/claim/${token}` : '';
+                  const href = token ? `https://claims.triprescue.site/claim/${token}` : '';
 
                   return (
                     <tr key={row.id} style={{ borderTop: '1px solid #eef2f7' }}>
@@ -346,10 +347,13 @@ export default async function ClaimsDashboardPage() {
                         <StatusBadge status={row.send_status} />
                       </td>
                       <td style={td}>{row.sent_at || '-'}</td>
+                      <td style={tdMono}>{token || 'NO_TOKEN'}</td>
                       <td style={td}>
                         {href ? (
                           <a
                             href={href}
+                            target="_blank"
+                            rel="noreferrer"
                             style={{
                               display: 'inline-block',
                               textDecoration: 'none',
