@@ -567,7 +567,7 @@ manualPassengerName,
                   <div key={doc.id} style={card}>
                     <div style={{ ...value, marginBottom: 10 }}>{doc.name ?? 'Document'}</div>
                     {doc.file_url && (
-                      <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#172554', color: '#93c5fd', border: '1px solid #1d4ed8', borderRadius: 12, padding: '10px 14px', textDecoration: 'none', fontWeight: 600 }}>
+                      <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#172554', color: '#93c5fd', border: '1px solid #1d4ed8', borderRadius: 14, padding: '10px 14px', textDecoration: 'none', fontWeight: 600 }}>
                         Open file
                       </a>
                     )}
@@ -583,7 +583,7 @@ manualPassengerName,
 
       {openLetterModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 9999 }}>
-          <div style={{ width: '100%', maxWidth: 900, background: '#0f172a', border: '1px solid #334155', borderRadius: 24, padding: 24, maxHeight: '92vh', overflow: 'auto' }}>
+          <div style={{ width: '100%', maxWidth: 900, background: '#0f172a', border: '1px solid #3b4d66', borderRadius: 24, padding: 24, maxHeight: '92vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: 28, margin: 0 }}>Generate Premium AI Claim Letter</h3>
               <button onClick={() => setOpenLetterModal(false)} style={secondaryBtn}>Close</button>
@@ -620,21 +620,21 @@ manualPassengerName,
             </div>
 
             {letterError && (
-              <div style={{ ...card, border: '1px solid #7f1d1d', background: '#450a0a', color: '#fecaca', marginTop: 16 }}>
+              <div style={{ ...card, border: '1px solid #7f1d1d', background: '#4a0f1a', color: '#fecaca', marginTop: 16 }}>
                 {letterError}
               </div>
             )}
 
             {serverEligibility && (
               <div style={{ ...card, marginTop: 16 }}>
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>Eligibility result</div>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>Claim assessment</div>
                 <div style={{ color: '#cbd5e1', marginBottom: 4 }}>Status: {humanEligibilityStatus(serverEligibility.status)}</div>
                 <div style={{ color: '#cbd5e1', marginBottom: 4 }}>Framework: {serverEligibility.framework}</div>
                 <div style={{ color: '#cbd5e1', marginBottom: 4 }}>Confidence: {serverEligibility.confidence}</div>
                 <div style={{ color: '#94a3b8', marginTop: 8 }}>{serverEligibility.reason}</div>
                 {serverEligibility.missingInfo?.length > 0 && (
-                  <div style={{ marginTop: 10, padding: 12, borderRadius: 12, background: '#3f1d0b', border: '1px solid #9a3412', color: '#fed7aa' }}>
-                    <strong>Missing information detected:</strong> {serverEligibility.missingInfo.join(', ')}
+                  <div style={{ marginTop: 10, padding: 12, borderRadius: 14, background: '#4a3412', border: '1px solid #9a3412', color: '#fed7aa' }}>
+                    <strong>Missing claim information:</strong> {serverEligibility.missingInfo.join(', ')}
                   </div>
                 )}
               </div>
@@ -657,10 +657,10 @@ manualPassengerName,
                   style={{
                     width: '100%',
                     minHeight: 420,
-                    background: '#020617',
+                    background: '#06101f',
                     color: '#e2e8f0',
-                    border: '1px solid #334155',
-                    borderRadius: 16,
+                    border: '1px solid #3b4d66',
+                    borderRadius: 18,
                     padding: 16,
                     fontSize: 16,
                     lineHeight: 1.75,
@@ -671,29 +671,29 @@ manualPassengerName,
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button onClick={copyLetter} style={secondaryBtn}>{copied ? 'Copied' : 'Copy'}</button>
                     <button onClick={() => downloadLetterAsTxt(generatedLetter, incident)} style={secondaryBtn}>
-                    Download TXT
+                    Export TXT
                   </button>
                   <button
                     onClick={() => downloadLetterAsPdf(generatedLetter, effectiveIncident)}
                     style={secondaryBtn}
                   >
-                    Download PDF
+                    Export PDF
                   </button>
-                    <button onClick={generateLetter} style={secondaryBtn}>Regenerate</button>
+                    <button onClick={generateLetter} style={secondaryBtn}>Regenerate letter</button>
                   </div>
 
                   <div style={{ ...card }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>Send to airline / insurer</div>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>Send to airline or insurer</div>
                     <input
                       value={emailTo}
                       onChange={(e) => setEmailTo(e.target.value)}
                       placeholder="claims@airline.com"
                       style={{
                         width: '100%',
-                        background: '#020617',
+                        background: '#06101f',
                         color: '#fff',
-                        border: '1px solid #334155',
-                        borderRadius: 12,
+                        border: '1px solid #3b4d66',
+                        borderRadius: 14,
                         padding: 12,
                         marginBottom: 10,
                       }}
@@ -714,10 +714,10 @@ manualPassengerName,
                     placeholder={autoPassengerEmail || "your@email.com"}
                     style={{
                       width: '100%',
-                      background: '#020617',
+                      background: '#06101f',
                       color: '#fff',
-                      border: '1px solid #334155',
-                      borderRadius: 12,
+                      border: '1px solid #3b4d66',
+                      borderRadius: 14,
                       padding: 12,
                       marginBottom: 10,
                     }}
@@ -786,8 +786,8 @@ const primaryBtn: CSSProperties = {
 const secondaryBtn: CSSProperties = {
   background: '#111827',
   color: '#e2e8f0',
-  border: '1px solid #334155',
-  borderRadius: 12,
+  border: '1px solid #3b4d66',
+  borderRadius: 14,
   padding: '10px 14px',
   fontSize: 14,
   fontWeight: 600,
@@ -799,7 +799,7 @@ function langBtn(active: boolean): CSSProperties {
     background: active ? '#2563eb' : '#111827',
     color: '#fff',
     border: active ? '1px solid #3b82f6' : '1px solid #334155',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: '10px 14px',
     fontSize: 14,
     fontWeight: 600,
