@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
@@ -61,6 +62,25 @@ export default async function ClaimsDashboardPage() {
     .limit(100);
 
   const rows = claims || [];
+  const incidentIds = Array.from(
+    new Set(rows.map((r: any) => r.incident_id).filter(Boolean))
+  );
+
+  let tokenMap = new Map<string, string>();
+
+  if (incidentIds.length > 0) {
+    const { data: links } = await supabase
+      .from('share_links')
+      .select('incident_id, token, created_at')
+      .in('incident_id', incidentIds)
+      .order('created_at', { ascending: false });
+
+    for (const row of links || []) {
+      if (row.incident_id && row.token && !tokenMap.has(row.incident_id)) {
+        tokenMap.set(row.incident_id, row.token);
+      }
+    }
+  }
 
   const totalClaims = rows.length;
   const sentCount = rows.filter((r: any) => r.send_status === 'sent').length;
@@ -100,7 +120,7 @@ export default async function ClaimsDashboardPage() {
         }}
       >
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 980 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1120 }}>
             <thead style={{ background: '#f9fafb' }}>
               <tr>
                 <th style={th}>Incident</th>
@@ -109,21 +129,46 @@ export default async function ClaimsDashboardPage() {
                 <th style={th}>Attachments</th>
                 <th style={th}>Status</th>
                 <th style={th}>Sent At</th>
+                <th style={th}>Open</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row: any) => (
-                <tr key={row.id} style={{ borderTop: '1px solid #f3f4f6' }}>
-                  <td style={tdMono}>{row.incident_id}</td>
-                  <td style={td}>{row.recipient_email}</td>
-                  <td style={td}>{row.subject}</td>
-                  <td style={td}>{row.attachments_count}</td>
-                  <td style={td}>
-                    <StatusBadge status={row.send_status} />
-                  </td>
-                  <td style={td}>{row.sent_at || '-'}</td>
-                </tr>
-              ))}
+              {rows.map((row: any) => {
+                const token = tokenMap.get(row.incident_id);
+                return (
+                  <tr key={row.id} style={{ borderTop: '1px solid #f3f4f6' }}>
+                    <td style={tdMono}>{row.incident_id}</td>
+                    <td style={td}>{row.recipient_email}</td>
+                    <td style={td}>{row.subject}</td>
+                    <td style={td}>{row.attachments_count}</td>
+                    <td style={td}>
+                      <StatusBadge status={row.send_status} />
+                    </td>
+                    <td style={td}>{row.sent_at || '-'}</td>
+                    <td style={td}>
+                      {token ? (
+                        <Link
+                          href={`/claim/${token}`}
+                          style={{
+                            display: 'inline-block',
+                            textDecoration: 'none',
+                            background: '#111827',
+                            color: '#fff',
+                            padding: '8px 12px',
+                            borderRadius: 10,
+                            fontSize: 13,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Open Claim
+                        </Link>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontSize: 13 }}>No token</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
