@@ -1,99 +1,58 @@
-'use client';
-
-import { useState } from 'react';
 import SiteNavbar from '../../components/SiteNavbar';
 import SiteFooter from '../../components/SiteFooter';
 
-function CheckoutButton({
-  plan,
-  label,
-  featured = false,
-}: {
-  plan: 'pro' | 'premium';
-  label: string;
-  featured?: boolean;
-}) {
-  const [loading, setLoading] = useState(false);
-
-  async function handleCheckout() {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        alert(payload?.error || 'Checkout failed');
-        return;
-      }
-
-      if (payload?.url) {
-        window.location.href = payload.url;
-        return;
-      }
-
-      alert('No checkout URL returned');
-    } catch (e: any) {
-      alert(e?.message || 'Checkout failed');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <button
-      onClick={handleCheckout}
-      disabled={loading}
-      style={{
-        marginTop: 18,
-        border: featured ? '1px solid #111827' : '1px solid #d1d5db',
-        background: featured ? '#111827' : '#fff',
-        color: featured ? '#fff' : '#111827',
-        borderRadius: 14,
-        padding: '12px 18px',
-        fontWeight: 700,
-        cursor: 'pointer',
-      }}
-    >
-      {loading ? 'Redirecting...' : label}
-    </button>
-  );
-}
-
-function PlanCard({
-  title,
+function PriceCard({
+  name,
   price,
-  features,
-  featured = false,
+  points,
+  primary,
   cta,
+  href,
 }: {
-  title: string;
+  name: string;
   price: string;
-  features: string[];
-  featured?: boolean;
-  cta?: React.ReactNode;
+  points: string[];
+  primary?: boolean;
+  cta: string;
+  href: string;
 }) {
   return (
     <div
       style={{
-        border: featured ? '2px solid #111827' : '1px solid #e5e7eb',
-        borderRadius: 22,
+        border: primary ? '2px solid #111827' : '1px solid #e5e7eb',
+        borderRadius: 20,
         padding: 24,
         background: '#fff',
-        boxShadow: featured ? '0 10px 30px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.04)',
+        boxShadow: primary ? '0 10px 30px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.04)',
       }}
     >
-      <h2 style={{ marginTop: 0, color: '#111827' }}>{title}</h2>
-      <div style={{ fontSize: 36, fontWeight: 900, marginBottom: 16, color: '#111827' }}>{price}</div>
+      <div style={{ color: '#111827', fontWeight: 800, fontSize: 20 }}>{name}</div>
+      <div style={{ fontSize: 36, fontWeight: 900, color: '#111827', margin: '10px 0 16px' }}>
+        {price}
+      </div>
+
       <ul style={{ paddingLeft: 18, color: '#6b7280', lineHeight: 2 }}>
-        {features.map((f) => (
-          <li key={f}>{f}</li>
+        {points.map((p) => (
+          <li key={p}>{p}</li>
         ))}
       </ul>
-      {cta}
+
+      <a
+        href={href}
+        style={{
+          display: 'inline-block',
+          marginTop: 18,
+          textDecoration: 'none',
+          background: primary ? '#111827' : '#fff',
+          color: primary ? '#fff' : '#111827',
+          padding: '12px 18px',
+          borderRadius: 12,
+          fontWeight: 700,
+          border: primary ? 'none' : '1px solid #d1d5db',
+        }}
+      >
+        {cta}
+      </a>
     </div>
   );
 }
@@ -102,11 +61,11 @@ export default function PricingPage() {
   return (
     <>
       <SiteNavbar />
-      <main style={{ background: '#f9fafb', minHeight: '100vh' }}>
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 16px' }}>
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+      <main style={{ minHeight: '100vh', background: '#f9fafb' }}>
+        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 16px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 36 }}>
             <h1 style={{ fontSize: 42, margin: 0, color: '#111827' }}>Pricing</h1>
-            <p style={{ color: '#6b7280', fontSize: 18 }}>
+            <p style={{ color: '#6b7280', fontSize: 16, marginTop: 12 }}>
               Choose the plan that fits your claim volume and workflow.
             </p>
           </div>
@@ -114,61 +73,47 @@ export default function PricingPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: 20,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: 18,
             }}
           >
-            <PlanCard
-              title="Free"
+            <PriceCard
+              name="Free"
               price="€0"
-              features={[
+              points={[
                 'Generate claim letters',
                 'Basic evidence packaging',
                 'Single-user access',
               ]}
-              cta={
-                <a
-                  href="/"
-                  style={{
-                    display: 'inline-block',
-                    marginTop: 18,
-                    textDecoration: 'none',
-                    background: '#fff',
-                    color: '#111827',
-                    border: '1px solid #d1d5db',
-                    borderRadius: 14,
-                    padding: '12px 18px',
-                    fontWeight: 700,
-                  }}
-                >
-                  Start Free
-                </a>
-              }
+              cta="Get Started"
+              href="/dashboard/claims"
             />
 
-            <PlanCard
-              title="Pro"
+            <PriceCard
+              name="Pro"
               price="€19/mo"
-              featured
-              features={[
+              primary
+              points={[
                 'Send claims by email',
                 'Attachment support',
                 'Claims dashboard',
                 'Status tracking',
               ]}
-              cta={<CheckoutButton plan="pro" label="Upgrade to Pro" featured />}
+              cta="Upgrade to Pro"
+              href="/api/stripe/checkout?plan=pro"
             />
 
-            <PlanCard
-              title="Premium"
+            <PriceCard
+              name="Premium"
               price="€49/mo"
-              features={[
+              points={[
                 'Everything in Pro',
                 'Follow-up workflows',
                 'Escalation-ready setup',
                 'Priority support',
               ]}
-              cta={<CheckoutButton plan="premium" label="Upgrade to Premium" />}
+              cta="Go Premium"
+              href="/api/stripe/checkout?plan=premium"
             />
           </div>
         </section>
