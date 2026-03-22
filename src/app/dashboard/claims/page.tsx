@@ -100,6 +100,24 @@ export default async function ClaimsDashboardPage() {
     .limit(100);
 
   const rows = claims || [];
+  const incidentIds = Array.from(
+  new Set(rows.map((r: any) => r.incident_id).filter(Boolean))
+) as string[];
+
+  let shareMap: Record<string, string> = {};
+  if (incidentIds.length > 0) {
+    const { data: shareLinks } = await supabase
+      .from('share_links')
+      .select('incident_id, token, created_at')
+      .in('incident_id', incidentIds)
+      .order('created_at', { ascending: false });
+
+    for (const row of shareLinks || []) {
+      if (row.incident_id && row.token && !shareMap[row.incident_id]) {
+        shareMap[row.incident_id] = row.token;
+      }
+    }
+  }
 
   const totalClaims = rows.length;
   const sentCount = rows.filter((r: any) => r.send_status === 'sent').length;
@@ -296,7 +314,7 @@ export default async function ClaimsDashboardPage() {
                 color: '#2563eb',
               }}
             >
-              Link operational value to paid plans
+              Use operational view
             </a>
           </div>
 
@@ -314,34 +332,58 @@ export default async function ClaimsDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row: any) => (
-                  <tr key={row.id} style={{ borderTop: '1px solid #eef2f7' }}>
-                    <td style={tdMono}>{row.incident_id}</td>
-                    <td style={td}>{row.recipient_email}</td>
-                    <td style={td}>{row.subject}</td>
-                    <td style={td}>{row.attachments_count}</td>
-                    <td style={td}>
-                      <StatusBadge status={row.send_status} />
-                    </td>
-                    <td style={td}>{row.sent_at || '-'}</td>
-                    <td style={td}>
-                      <button
-                        style={{
-                          border: 'none',
-                          background: '#0f172a',
-                          color: '#fff',
-                          padding: '8px 12px',
-                          borderRadius: 999,
-                          fontSize: 12,
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Open
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((row: any) => {
+                  const token = shareMap[row.incident_id];
+                  const href = token ? `/claim/${token}` : '';
+
+                  return (
+                    <tr key={row.id} style={{ borderTop: '1px solid #eef2f7' }}>
+                      <td style={tdMono}>{row.incident_id}</td>
+                      <td style={td}>{row.recipient_email}</td>
+                      <td style={td}>{row.subject}</td>
+                      <td style={td}>{row.attachments_count}</td>
+                      <td style={td}>
+                        <StatusBadge status={row.send_status} />
+                      </td>
+                      <td style={td}>{row.sent_at || '-'}</td>
+                      <td style={td}>
+                        {href ? (
+                          <a
+                            href={href}
+                            style={{
+                              display: 'inline-block',
+                              textDecoration: 'none',
+                              border: 'none',
+                              background: '#0f172a',
+                              color: '#fff',
+                              padding: '8px 12px',
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Open
+                          </a>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              background: '#e2e8f0',
+                              color: '#64748b',
+                              padding: '8px 12px',
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 800,
+                            }}
+                          >
+                            No link
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
