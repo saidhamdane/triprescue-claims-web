@@ -1,7 +1,5 @@
 import type { CSSProperties } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import SiteNavbar from '../../../components/SiteNavbar';
-import SiteFooter from '../../../components/SiteFooter';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,49 +10,51 @@ function StatCard({
 }: {
   label: string;
   value: string | number;
-  tone?: 'default' | 'green' | 'blue' | 'amber';
+  tone?: 'default' | 'success' | 'warning' | 'info';
 }) {
-  const toneMap = {
-    default: {
-      bg: '#ffffff',
-      border: '#e2e8f0',
-      value: '#0f172a',
-      label: '#64748b',
-    },
-    green: {
-      bg: '#f0fdf4',
-      border: '#bbf7d0',
-      value: '#166534',
-      label: '#15803d',
-    },
-    blue: {
-      bg: '#eff6ff',
-      border: '#bfdbfe',
-      value: '#1d4ed8',
-      label: '#2563eb',
-    },
-    amber: {
-      bg: '#fffbeb',
-      border: '#fde68a',
-      value: '#92400e',
-      label: '#b45309',
-    },
-  }[tone];
+  const tones: Record<string, CSSProperties> = {
+    default: { background: '#ffffff', border: '1px solid #e2e8f0' },
+    success: { background: '#ecfdf5', border: '1px solid #bbf7d0' },
+    warning: { background: '#fffbeb', border: '1px solid #fde68a' },
+    info: { background: '#eff6ff', border: '1px solid #bfdbfe' },
+  };
 
   return (
     <div
       style={{
-        border: `1px solid ${toneMap.border}`,
-        borderRadius: 20,
-        background: toneMap.bg,
-        padding: 20,
+        borderRadius: 18,
+        padding: 18,
         boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
+        ...tones[tone],
       }}
     >
-      <div style={{ color: toneMap.label, fontSize: 13, fontWeight: 700 }}>{label}</div>
-      <div style={{ color: toneMap.value, fontSize: 30, fontWeight: 900, marginTop: 10 }}>
+      <div style={{ fontSize: 13, color: '#64748b', marginBottom: 8, fontWeight: 600 }}>{label}</div>
+      <div style={{ fontSize: 30, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>
         {value}
       </div>
+    </div>
+  );
+}
+
+function MiniCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div
+      style={{
+        borderRadius: 16,
+        border: '1px solid #e2e8f0',
+        background: '#fff',
+        padding: 16,
+        boxShadow: '0 6px 18px rgba(15,23,42,0.04)',
+      }}
+    >
+      <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{text}</div>
     </div>
   );
 }
@@ -68,71 +68,22 @@ function StatusBadge({ status }: { status: string }) {
     replied: { bg: '#dbeafe', color: '#1d4ed8' },
   };
 
-  const tone = map[status] || { bg: '#e2e8f0', color: '#334155' };
+  const style = map[status] || { bg: '#e2e8f0', color: '#334155' };
 
   return (
     <span
       style={{
-        display: 'inline-block',
         padding: '6px 10px',
         borderRadius: 999,
         fontSize: 12,
-        fontWeight: 800,
-        background: tone.bg,
-        color: tone.color,
-        textTransform: 'capitalize',
+        fontWeight: 700,
+        background: style.bg,
+        color: style.color,
+        display: 'inline-block',
       }}
     >
       {status}
     </span>
-  );
-}
-
-function ActionCard({
-  title,
-  text,
-  href,
-}: {
-  title: string;
-  text: string;
-  href: string;
-}) {
-  return (
-    <a
-      href={href}
-      style={{
-        textDecoration: 'none',
-        border: '1px solid #e2e8f0',
-        borderRadius: 18,
-        background: '#fff',
-        padding: 18,
-        boxShadow: '0 8px 24px rgba(15,23,42,0.05)',
-        display: 'block',
-      }}
-    >
-      <div style={{ color: '#0f172a', fontWeight: 800, fontSize: 16 }}>{title}</div>
-      <div style={{ color: '#64748b', fontSize: 14, lineHeight: 1.7, marginTop: 8 }}>{text}</div>
-    </a>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div
-      style={{
-        border: '1px dashed #cbd5e1',
-        borderRadius: 22,
-        background: '#fff',
-        padding: 32,
-        textAlign: 'center',
-      }}
-    >
-      <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 24 }}>No claims sent yet</div>
-      <div style={{ color: '#64748b', fontSize: 15, lineHeight: 1.8, marginTop: 10 }}>
-        Once you send claim packages by email, this dashboard will show delivery status,
-        recipients, attachments, timestamps, and direct claim links.
-      </div>
-    </div>
   );
 }
 
@@ -148,34 +99,7 @@ export default async function ClaimsDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(100);
 
-  const incidentIds = Array.from(
-    new Set((claims || []).map((r: any) => r.incident_id).filter(Boolean))
-  );
-
-  let shareLinks: any[] = [];
-  if (incidentIds.length > 0) {
-    const { data } = await supabase
-      .from('share_links')
-      .select('incident_id, token, created_at')
-      .in('incident_id', incidentIds)
-      .order('created_at', { ascending: false });
-
-    shareLinks = data || [];
-  }
-
-  const tokenMap = new Map<string, string>();
-  for (const row of shareLinks) {
-    if (row?.incident_id && row?.token && !tokenMap.has(row.incident_id)) {
-      tokenMap.set(row.incident_id, row.token);
-    }
-  }
-
-  const rows = (claims || []).map((row: any) => ({
-    ...row,
-    claim_url: row.incident_id && tokenMap.get(row.incident_id)
-      ? `/claim/${tokenMap.get(row.incident_id)}`
-      : null,
-  }));
+  const rows = claims || [];
 
   const totalClaims = rows.length;
   const sentCount = rows.filter((r: any) => r.send_status === 'sent').length;
@@ -183,260 +107,262 @@ export default async function ClaimsDashboardPage() {
   const totalAttachments = rows.reduce((sum: number, r: any) => sum + (r.attachments_count || 0), 0);
 
   return (
-    <>
-      <SiteNavbar />
-      <main style={{ minHeight: '100vh', background: '#f8fafc' }}>
-        <section style={{ maxWidth: 1240, margin: '0 auto', padding: '42px 18px 24px' }}>
-          <div
-            style={{
-              border: '1px solid #e2e8f0',
-              borderRadius: 28,
-              padding: 28,
-              background: 'linear-gradient(135deg,#0f172a,#111827)',
-              boxShadow: '0 20px 50px rgba(15,23,42,0.16)',
-            }}
-          >
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: 22,
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    display: 'inline-block',
-                    padding: '8px 12px',
-                    borderRadius: 999,
-                    background: 'rgba(37,99,235,0.14)',
-                    color: '#93c5fd',
-                    fontWeight: 800,
-                    fontSize: 13,
-                    marginBottom: 14,
-                  }}
-                >
-                  Claims operations
-                </div>
-
-                <h1 style={{ margin: 0, color: '#fff', fontSize: 42, lineHeight: 1.08 }}>
-                  Claims Dashboard
-                </h1>
-
-                <p style={{ color: '#94a3b8', fontSize: 16, lineHeight: 1.9, marginTop: 14 }}>
-                  Monitor delivery status, recipients, attachments, and claim links from one
-                  operational view.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  border: '1px solid rgba(148,163,184,0.14)',
-                  borderRadius: 22,
-                  background: 'rgba(255,255,255,0.04)',
-                  padding: 18,
-                }}
-              >
-                <div style={{ color: '#fff', fontWeight: 800, fontSize: 18, marginBottom: 12 }}>
-                  Quick actions
-                </div>
-
-                <div style={{ display: 'grid', gap: 12 }}>
-                  <a href="/pricing" style={quickBtn}>
-                    View pricing
-                  </a>
-                  <a href="/upgrade" style={quickBtnSecondary}>
-                    Upgrade workflow
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section style={{ maxWidth: 1240, margin: '0 auto', padding: '0 18px 22px' }}>
+    <main style={{ background: '#f8fafc', minHeight: '100vh', padding: '32px 16px 80px' }}>
+      <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+        <section
+          style={{
+            background: 'linear-gradient(135deg,#0b1220,#111827)',
+            border: '1px solid rgba(148,163,184,0.16)',
+            borderRadius: 28,
+            padding: 24,
+            boxShadow: '0 20px 50px rgba(2,6,23,0.28)',
+            marginBottom: 22,
+          }}
+        >
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: 16,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 18,
+              alignItems: 'start',
             }}
           >
-            <StatCard label="Total Claims" value={totalClaims} />
-            <StatCard label="Sent" value={sentCount} tone="green" />
-            <StatCard label="Failed" value={failedCount} tone="amber" />
-            <StatCard label="Total Attachments" value={totalAttachments} tone="blue" />
-          </div>
-        </section>
-
-        <section style={{ maxWidth: 1240, margin: '0 auto', padding: '0 18px 24px' }}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: 16,
-            }}
-          >
-            <ActionCard
-              href="/pricing"
-              title="Commercial view"
-              text="Check the plan structure and current upgrade path for premium sending workflows."
-            />
-            <ActionCard
-              href="/upgrade"
-              title="Unlock sending"
-              text="Guide free users to a Pro billing path that unlocks direct claim delivery."
-            />
-            <ActionCard
-              href="/billing/success"
-              title="Billing state"
-              text="Use the billing success flow as the premium confirmation experience after checkout."
-            />
-          </div>
-        </section>
-
-        <section style={{ maxWidth: 1240, margin: '0 auto', padding: '0 18px 72px' }}>
-          <div
-            style={{
-              border: '1px solid #e2e8f0',
-              borderRadius: 24,
-              background: '#fff',
-              boxShadow: '0 10px 28px rgba(15,23,42,0.05)',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                padding: 24,
-                borderBottom: '1px solid #e2e8f0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: 12,
-                flexWrap: 'wrap',
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <div style={{ color: '#0f172a', fontWeight: 800, fontSize: 24 }}>Recent claim activity</div>
-                <div style={{ color: '#64748b', fontSize: 14, marginTop: 8 }}>
-                  Latest sent claims, recipients, attachments, delivery outcomes, and direct links.
-                </div>
-              </div>
+            <div>
               <div
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: 999,
-                  background: '#eff6ff',
-                  color: '#1d4ed8',
+                  display: 'inline-block',
+                  background: 'rgba(37,99,235,0.14)',
+                  color: '#93c5fd',
                   fontSize: 12,
                   fontWeight: 800,
+                  borderRadius: 999,
+                  padding: '7px 11px',
+                  marginBottom: 12,
                 }}
               >
-                Live operational view
+                Claims operations
+              </div>
+
+              <h1
+                style={{
+                  color: '#fff',
+                  fontSize: 36,
+                  lineHeight: 1.08,
+                  margin: '0 0 10px',
+                  fontWeight: 900,
+                  letterSpacing: '-0.03em',
+                }}
+              >
+                Claims Dashboard
+              </h1>
+
+              <p
+                style={{
+                  color: '#94a3b8',
+                  fontSize: 15,
+                  lineHeight: 1.7,
+                  margin: 0,
+                  maxWidth: 640,
+                }}
+              >
+                Monitor delivery status, recipients, attachments, and claim-link activity from one
+                operational workspace.
+              </p>
+            </div>
+
+            <div
+              style={{
+                borderRadius: 20,
+                border: '1px solid rgba(148,163,184,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                padding: 16,
+              }}
+            >
+              <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, marginBottom: 12 }}>
+                Quick actions
+              </div>
+
+              <div style={{ display: 'grid', gap: 10 }}>
+                <a
+                  href="/pricing"
+                  style={{
+                    display: 'block',
+                    textDecoration: 'none',
+                    textAlign: 'center',
+                    background: '#2563eb',
+                    color: '#fff',
+                    padding: '12px 14px',
+                    borderRadius: 12,
+                    fontWeight: 800,
+                    fontSize: 14,
+                  }}
+                >
+                  View pricing
+                </a>
+
+                <a
+                  href="/upgrade"
+                  style={{
+                    display: 'block',
+                    textDecoration: 'none',
+                    textAlign: 'center',
+                    background: 'rgba(255,255,255,0.04)',
+                    color: '#fff',
+                    padding: '12px 14px',
+                    borderRadius: 12,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    border: '1px solid rgba(148,163,184,0.12)',
+                  }}
+                >
+                  Upgrade workflow
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 14,
+            marginBottom: 18,
+          }}
+        >
+          <StatCard label="Total Claims" value={totalClaims} />
+          <StatCard label="Sent" value={sentCount} tone="success" />
+          <StatCard label="Failed" value={failedCount} tone="warning" />
+          <StatCard label="Total Attachments" value={totalAttachments} tone="info" />
+        </section>
+
+        <section
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 14,
+            marginBottom: 22,
+          }}
+        >
+          <MiniCard
+            title="Commercial view"
+            text="Check the plan structure and current upgrade path for premium claim workflows."
+          />
+          <MiniCard
+            title="Unlock sending"
+            text="Direct file delivery and email sending become much more valuable once Pro is enabled."
+          />
+          <MiniCard
+            title="Billing state"
+            text="Use the billing success flow and current plan confirmation experience after checkout."
+          />
+        </section>
+
+        <section
+          style={{
+            background: '#fff',
+            border: '1px solid #e2e8f0',
+            borderRadius: 22,
+            overflow: 'hidden',
+            boxShadow: '0 10px 28px rgba(15,23,42,0.05)',
+          }}
+        >
+          <div
+            style={{
+              padding: '18px 18px 12px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', marginBottom: 4 }}>
+                Recent claim activity
+              </div>
+              <div style={{ fontSize: 13, color: '#64748b' }}>
+                Latest sent claims, recipients, attachments, delivery outcomes, and check links.
               </div>
             </div>
 
-            {rows.length === 0 ? (
-              <div style={{ padding: 24 }}>
-                <EmptyState />
-              </div>
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1120 }}>
-                  <thead style={{ background: '#f8fafc' }}>
-                    <tr>
-                      <th style={th}>Incident</th>
-                      <th style={th}>Recipient</th>
-                      <th style={th}>Subject</th>
-                      <th style={th}>Attachments</th>
-                      <th style={th}>Status</th>
-                      <th style={th}>Sent At</th>
-                      <th style={th}>Open</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row: any) => (
-                      <tr key={row.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                        <td style={tdMono}>{row.incident_id}</td>
-                        <td style={td}>{row.recipient_email}</td>
-                        <td style={td}>{row.subject}</td>
-                        <td style={td}>{row.attachments_count || 0}</td>
-                        <td style={td}>
-                          <StatusBadge status={row.send_status || 'draft'} />
-                        </td>
-                        <td style={td}>{row.sent_at || '-'}</td>
-                        <td style={td}>
-                          {row.claim_url ? (
-                            <a
-                              href={row.claim_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{
-                                textDecoration: 'none',
-                                background: '#111827',
-                                color: '#fff',
-                                padding: '10px 14px',
-                                borderRadius: 12,
-                                fontSize: 13,
-                                fontWeight: 800,
-                                display: 'inline-block',
-                              }}
-                            >
-                              Open
-                            </a>
-                          ) : (
-                            <span style={{ color: '#94a3b8', fontSize: 13 }}>No link</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <a
+              href="/pricing"
+              style={{
+                textDecoration: 'none',
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#2563eb',
+              }}
+            >
+              Link operational value to paid plans
+            </a>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 980 }}>
+              <thead style={{ background: '#f8fafc' }}>
+                <tr>
+                  <th style={th}>Incident</th>
+                  <th style={th}>Recipient</th>
+                  <th style={th}>Subject</th>
+                  <th style={th}>Attachments</th>
+                  <th style={th}>Status</th>
+                  <th style={th}>Sent At</th>
+                  <th style={th}>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row: any) => (
+                  <tr key={row.id} style={{ borderTop: '1px solid #eef2f7' }}>
+                    <td style={tdMono}>{row.incident_id}</td>
+                    <td style={td}>{row.recipient_email}</td>
+                    <td style={td}>{row.subject}</td>
+                    <td style={td}>{row.attachments_count}</td>
+                    <td style={td}>
+                      <StatusBadge status={row.send_status} />
+                    </td>
+                    <td style={td}>{row.sent_at || '-'}</td>
+                    <td style={td}>
+                      <button
+                        style={{
+                          border: 'none',
+                          background: '#0f172a',
+                          color: '#fff',
+                          padding: '8px 12px',
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
-      </main>
-      <SiteFooter />
-    </>
+      </div>
+    </main>
   );
 }
 
-const quickBtn: CSSProperties = {
-  textDecoration: 'none',
-  background: 'linear-gradient(135deg,#2563eb,#1d4ed8)',
-  color: '#fff',
-  padding: '12px 16px',
-  borderRadius: 14,
-  fontWeight: 800,
-  textAlign: 'center',
-};
-
-const quickBtnSecondary: CSSProperties = {
-  textDecoration: 'none',
-  background: 'rgba(255,255,255,0.05)',
-  color: '#fff',
-  padding: '12px 16px',
-  borderRadius: 14,
-  fontWeight: 800,
-  textAlign: 'center',
-  border: '1px solid rgba(148,163,184,0.16)',
-};
-
 const th: CSSProperties = {
   textAlign: 'left',
-  padding: '16px 18px',
-  color: '#334155',
+  padding: '14px 16px',
   fontSize: 13,
+  color: '#475569',
   fontWeight: 800,
-  borderBottom: '1px solid #e2e8f0',
 };
 
 const td: CSSProperties = {
-  padding: '16px 18px',
-  color: '#111827',
+  padding: '14px 16px',
   fontSize: 14,
+  color: '#0f172a',
   verticalAlign: 'top',
 };
 
@@ -444,5 +370,4 @@ const tdMono: CSSProperties = {
   ...td,
   fontFamily: 'monospace',
   fontSize: 12,
-  color: '#334155',
 };
