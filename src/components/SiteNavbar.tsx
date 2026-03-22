@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 
-const linkStyle: React.CSSProperties = {
+const navLink: CSSProperties = {
   color: '#cbd5e1',
   textDecoration: 'none',
   fontSize: 14,
@@ -15,8 +16,8 @@ export default function SiteNavbar() {
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        borderBottom: '1px solid rgba(148,163,184,0.14)',
-        background: 'rgba(2,6,23,0.82)',
+        borderBottom: '1px solid rgba(148,163,184,0.12)',
+        background: 'rgba(2,6,23,0.86)',
         backdropFilter: 'blur(14px)',
       }}
     >
@@ -24,11 +25,12 @@ export default function SiteNavbar() {
         style={{
           maxWidth: 1240,
           margin: '0 auto',
-          padding: '16px 18px',
+          padding: '14px 18px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 18,
+          gap: 16,
+          flexWrap: 'wrap',
         }}
       >
         <Link
@@ -38,28 +40,30 @@ export default function SiteNavbar() {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
+            minWidth: 0,
           }}
         >
           <div
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: 12,
+              width: 38,
+              height: 38,
+              borderRadius: 13,
               background: 'linear-gradient(135deg,#2563eb,#06b6d4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
               fontWeight: 900,
-              fontSize: 15,
+              fontSize: 16,
               boxShadow: '0 10px 30px rgba(37,99,235,0.35)',
+              flexShrink: 0,
             }}
           >
             T
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ color: '#fff', fontWeight: 800, fontSize: 16 }}>TripRescue AI</div>
-            <div style={{ color: '#94a3b8', fontSize: 11 }}>Travel claims platform</div>
+            <div style={{ color: '#94a3b8', fontSize: 11 }}>Premium travel claims platform</div>
           </div>
         </Link>
 
@@ -67,17 +71,18 @@ export default function SiteNavbar() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 16,
+            gap: 14,
             flexWrap: 'wrap',
+            justifyContent: 'flex-end',
           }}
         >
-          <Link href="/pricing" style={linkStyle}>Pricing</Link>
-          <Link href="/dashboard/claims" style={linkStyle}>Dashboard</Link>
-          <Link href="/contact" style={linkStyle}>Contact</Link>
-          <Link href="/privacy" style={linkStyle}>Privacy</Link>
-          <Link href="/terms" style={linkStyle}>Terms</Link>
+          <Link href="/pricing" style={navLink}>Pricing</Link>
+          <Link href="/dashboard/claims" style={navLink}>Dashboard</Link>
+          <Link href="/contact" style={navLink}>Contact</Link>
+          <Link href="/privacy" style={navLink}>Privacy</Link>
+          <Link href="/terms" style={navLink}>Terms</Link>
           <Link
-            href="/pricing"
+            href="/upgrade"
             style={{
               textDecoration: 'none',
               color: '#fff',

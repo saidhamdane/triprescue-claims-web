@@ -361,6 +361,108 @@ export default function HomePage() {
           </div>
         </section>
 
+
+        <section style={{ background: '#ffffff' }}>
+          <div style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 18px 72px' }}>
+            <SectionHeader
+              eyebrow="Use cases"
+              title="Built for real travel support scenarios"
+              text="The product is structured to work across direct traveler use, concierge-style support, and claim operations."
+            />
+
+            <div
+              style={{
+                marginTop: 28,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: 18,
+              }}
+            >
+              <UseCaseCard
+                title="Individual travelers"
+                text="Generate stronger letters, package evidence cleanly, and move from draft to delivery faster."
+              />
+              <UseCaseCard
+                title="Travel assistants"
+                text="Use TripRescue AI as an operational layer for drafting and coordinating multiple traveler incidents."
+              />
+              <UseCaseCard
+                title="Claim support workflows"
+                text="Track sending status, attachments, and outcomes with a more structured premium workflow."
+              />
+            </div>
+          </div>
+        </section>
+
+        <section style={{ background: '#020617' }}>
+          <div style={{ maxWidth: 1240, margin: '0 auto', padding: '72px 18px' }}>
+            <SectionHeaderDark
+              eyebrow="Why it feels premium"
+              title="A calmer, cleaner, more credible user experience"
+              text="The positioning is no longer just AI generation. It is now an operational travel claims product with commercial structure."
+            />
+
+            <div
+              style={{
+                marginTop: 28,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: 18,
+              }}
+            >
+              <Testimonial
+                quote="The workflow feels structured enough to be used as a client-facing claim support process."
+                role="Travel support operator"
+              />
+              <Testimonial
+                quote="The upgrade path from drafting to direct sending is clear and commercially usable."
+                role="SaaS growth perspective"
+              />
+              <Testimonial
+                quote="The product feels much closer to a premium vertical SaaS than a generic AI tool."
+                role="Commercial UX review"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section style={{ background: '#f8fafc' }}>
+          <div style={{ maxWidth: 1240, margin: '0 auto', padding: '72px 18px' }}>
+            <SectionHeader
+              eyebrow="FAQ"
+              title="Common questions before users upgrade"
+              text="These answers reduce friction and make the pricing page easier to trust."
+            />
+
+            <div
+              style={{
+                marginTop: 28,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 18,
+              }}
+            >
+              <FAQItem
+                q="Can I start for free?"
+                a="Yes. The Free plan allows users to generate claim drafts and prepare basic evidence before upgrading."
+              />
+              <FAQItem
+                q="What does Pro unlock?"
+                a="Pro unlocks direct claim sending by email, attachment support, dashboard visibility, and delivery tracking."
+              />
+              <FAQItem
+                q="Who is this designed for?"
+                a="TripRescue AI is suitable for individual travelers, assistants, and premium support workflows handling travel incidents."
+              />
+              <FAQItem
+                q="Can users cancel later?"
+                a="Yes. The subscription model is designed to support upgrades, cancellations, and future commercial refinement."
+              />
+            </div>
+          </div>
+        </section>
+
+
         <section style={{ maxWidth: 1240, margin: '0 auto', padding: '72px 18px' }}>
           <div
             style={{
@@ -449,6 +551,36 @@ function TrustItem({ text }: { text: string }) {
   );
 }
 
+
+function SectionHeaderDark({
+  eyebrow,
+  title,
+  text,
+}: {
+  eyebrow: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <div
+        style={{
+          color: '#60a5fa',
+          fontWeight: 800,
+          fontSize: 13,
+          marginBottom: 12,
+          textTransform: 'uppercase',
+          letterSpacing: 0.6,
+        }}
+      >
+        {eyebrow}
+      </div>
+      <h2 style={{ margin: 0, color: '#fff', fontSize: 42, lineHeight: 1.1 }}>{title}</h2>
+      <p style={{ color: '#94a3b8', lineHeight: 1.9, fontSize: 17, marginTop: 14 }}>{text}</p>
+    </div>
+  );
+}
+
 function SectionHeader({
   eyebrow,
   title,
@@ -500,6 +632,79 @@ function FeatureLight({
     </div>
   );
 }
+
+
+function UseCaseCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div
+      style={{
+        border: '1px solid #e2e8f0',
+        background: '#fff',
+        borderRadius: 22,
+        padding: 24,
+        boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
+      }}
+    >
+      <h3 style={{ margin: 0, color: '#0f172a', fontSize: 20 }}>{title}</h3>
+      <p style={{ margin: '10px 0 0', color: '#475569', lineHeight: 1.8 }}>{text}</p>
+    </div>
+  );
+}
+
+function Testimonial({
+  quote,
+  role,
+}: {
+  quote: string;
+  role: string;
+}) {
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(148,163,184,0.14)',
+        background: 'rgba(255,255,255,0.04)',
+        borderRadius: 22,
+        padding: 24,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.14)',
+      }}
+    >
+      <div style={{ color: '#e2e8f0', fontSize: 16, lineHeight: 1.9 }}>
+        “{quote}”
+      </div>
+      <div style={{ color: '#94a3b8', fontSize: 13, marginTop: 14 }}>{role}</div>
+    </div>
+  );
+}
+
+function FAQItem({
+  q,
+  a,
+}: {
+  q: string;
+  a: string;
+}) {
+  return (
+    <div
+      style={{
+        border: '1px solid #e2e8f0',
+        background: '#fff',
+        borderRadius: 20,
+        padding: 22,
+        boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
+      }}
+    >
+      <div style={{ color: '#0f172a', fontWeight: 800, fontSize: 18 }}>{q}</div>
+      <div style={{ color: '#475569', lineHeight: 1.8, marginTop: 10 }}>{a}</div>
+    </div>
+  );
+}
+
 
 const miniCard: React.CSSProperties = {
   border: '1px solid rgba(148,163,184,0.14)',

@@ -246,11 +246,105 @@ export default function PricingPage() {
             </div>
           </div>
         </section>
+
+        <section style={{ maxWidth: 1240, margin: '0 auto', padding: '0 18px 80px' }}>
+          <div
+            style={{
+              border: '1px solid #e2e8f0',
+              borderRadius: 24,
+              background: '#fff',
+              boxShadow: '0 10px 28px rgba(15,23,42,0.05)',
+              padding: 24,
+              marginBottom: 24,
+            }}
+          >
+            <div style={{ color: '#0f172a', fontWeight: 800, fontSize: 22 }}>
+              Simple commercial positioning
+            </div>
+            <div style={{ color: '#64748b', lineHeight: 1.8, marginTop: 10 }}>
+              Start free for drafting, upgrade to Pro for direct delivery, and move to Premium for
+              more advanced workflows and higher-touch support.
+            </div>
+          </div>
+
+          <div style={{ maxWidth: 920 }}>
+            <div
+              style={{
+                color: '#2563eb',
+                fontWeight: 800,
+                fontSize: 13,
+                marginBottom: 12,
+                textTransform: 'uppercase',
+                letterSpacing: 0.6,
+              }}
+            >
+              Pricing FAQ
+            </div>
+            <h2 style={{ margin: 0, color: '#0f172a', fontSize: 38, lineHeight: 1.1 }}>
+              Reduce hesitation before upgrade
+            </h2>
+            <p style={{ color: '#64748b', lineHeight: 1.9, fontSize: 16, marginTop: 14 }}>
+              Clear answers help the pricing page convert more like a premium SaaS sales page.
+            </p>
+          </div>
+
+          <div
+            style={{
+              marginTop: 28,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 18,
+            }}
+          >
+            <PricingFAQItem
+              q="Can I start for free?"
+              a="Yes. Users can start on the Free plan and draft claim letters before upgrading."
+            />
+            <PricingFAQItem
+              q="What happens after I upgrade?"
+              a="Users can access the paid billing workflow and unlock direct sending and tracking features."
+            />
+            <PricingFAQItem
+              q="Is Pro enough for most users?"
+              a="Yes. Pro is positioned as the fastest path for direct sending, attachments, and claim operations."
+            />
+            <PricingFAQItem
+              q="Why does Premium exist?"
+              a="Premium supports more advanced workflows, escalation-oriented usage, and stronger commercial positioning."
+            />
+          </div>
+        </section>
+
       </main>
       <SiteFooter />
     </>
   );
 }
+
+
+function PricingFAQItem({
+  q,
+  a,
+}: {
+  q: string;
+  a: string;
+}) {
+  return (
+    <div
+      style={{
+        border: '1px solid #e2e8f0',
+        background: '#fff',
+        borderRadius: 20,
+        padding: 22,
+        boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
+      }}
+    >
+      <div style={{ color: '#0f172a', fontWeight: 800, fontSize: 18 }}>{q}</div>
+      <div style={{ color: '#475569', lineHeight: 1.8, marginTop: 10 }}>{a}</div>
+    </div>
+  );
+}
+
 
 const th: React.CSSProperties = {
   textAlign: 'left',
