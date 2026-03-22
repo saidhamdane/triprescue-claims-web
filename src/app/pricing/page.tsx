@@ -1,16 +1,80 @@
+'use client';
+
+import { useState } from 'react';
 import SiteNavbar from '../../components/SiteNavbar';
 import SiteFooter from '../../components/SiteFooter';
+
+function CheckoutButton({
+  plan,
+  label,
+  featured = false,
+}: {
+  plan: 'pro' | 'premium';
+  label: string;
+  featured?: boolean;
+}) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleCheckout() {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(payload?.error || 'Checkout failed');
+        return;
+      }
+
+      if (payload?.url) {
+        window.location.href = payload.url;
+        return;
+      }
+
+      alert('No checkout URL returned');
+    } catch (e: any) {
+      alert(e?.message || 'Checkout failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCheckout}
+      disabled={loading}
+      style={{
+        marginTop: 18,
+        border: featured ? '1px solid #111827' : '1px solid #d1d5db',
+        background: featured ? '#111827' : '#fff',
+        color: featured ? '#fff' : '#111827',
+        borderRadius: 14,
+        padding: '12px 18px',
+        fontWeight: 700,
+        cursor: 'pointer',
+      }}
+    >
+      {loading ? 'Redirecting...' : label}
+    </button>
+  );
+}
 
 function PlanCard({
   title,
   price,
   features,
   featured = false,
+  cta,
 }: {
   title: string;
   price: string;
   features: string[];
   featured?: boolean;
+  cta?: React.ReactNode;
 }) {
   return (
     <div
@@ -29,22 +93,7 @@ function PlanCard({
           <li key={f}>{f}</li>
         ))}
       </ul>
-      <a
-        href="/contact"
-        style={{
-          display: 'inline-block',
-          marginTop: 18,
-          textDecoration: 'none',
-          background: featured ? '#111827' : '#fff',
-          color: featured ? '#fff' : '#111827',
-          border: '1px solid #d1d5db',
-          borderRadius: 14,
-          padding: '12px 18px',
-          fontWeight: 700,
-        }}
-      >
-        Get Started
-      </a>
+      {cta}
     </div>
   );
 }
@@ -77,7 +126,26 @@ export default function PricingPage() {
                 'Basic evidence packaging',
                 'Single-user access',
               ]}
+              cta={
+                <a
+                  href="/"
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 18,
+                    textDecoration: 'none',
+                    background: '#fff',
+                    color: '#111827',
+                    border: '1px solid #d1d5db',
+                    borderRadius: 14,
+                    padding: '12px 18px',
+                    fontWeight: 700,
+                  }}
+                >
+                  Start Free
+                </a>
+              }
             />
+
             <PlanCard
               title="Pro"
               price="€19/mo"
@@ -88,7 +156,9 @@ export default function PricingPage() {
                 'Claims dashboard',
                 'Status tracking',
               ]}
+              cta={<CheckoutButton plan="pro" label="Upgrade to Pro" featured />}
             />
+
             <PlanCard
               title="Premium"
               price="€49/mo"
@@ -98,6 +168,7 @@ export default function PricingPage() {
                 'Escalation-ready setup',
                 'Priority support',
               ]}
+              cta={<CheckoutButton plan="premium" label="Upgrade to Premium" />}
             />
           </div>
         </section>
