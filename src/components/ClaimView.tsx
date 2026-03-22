@@ -14,6 +14,7 @@ type ClaimViewProps = {
   };
 };
 
+/* ClaimView premium polish marker */
 function formatIncidentType(value?: string) {
   if (!value) return 'Unknown';
   return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -388,11 +389,11 @@ manualPassengerName,
       setSendResult('');
 
       if (!emailTo) {
-        throw new Error('Enter recipient email first');
+        throw new Error('Enter recipient email first.');
       }
 
       if (!generatedLetter) {
-        throw new Error('Generate letter first');
+        throw new Error('Generate the claim letter first.');
       }
 
       const subjectLine =
@@ -415,12 +416,12 @@ manualPassengerName,
       const payload = await res.json();
 
       if (!res.ok) {
-        throw new Error(payload?.error || 'Failed to send email');
+        throw new Error(payload?.error || 'Failed to send claim package');
       }
 
-      setSendResult('Letter sent successfully');
+      setSendResult('Claim package sent successfully.');
     } catch (err) {
-      setSendResult(err?.message || 'Failed to send email');
+      setSendResult(err?.message || 'Failed to send claim package');
     } finally {
       setSendingEmail(false);
     }
@@ -436,7 +437,7 @@ manualPassengerName,
       }
 
       if (!generatedLetter) {
-        throw new Error('Generate letter first');
+        throw new Error('Generate the claim letter first.');
       }
 
       const subjectLine =
@@ -459,27 +460,27 @@ manualPassengerName,
       const payload = await res.json();
 
       if (!res.ok) {
-        throw new Error(payload?.error || 'Failed to send copy');
+        throw new Error(payload?.error || 'Failed to send internal copy');
       }
 
-      setCopySendResult('Internal copy sent successfully');
+      setCopySendResult('Internal copy sent successfully.');
     } catch (err) {
-      setCopySendResult(err?.message || 'Failed to send copy');
+      setCopySendResult(err?.message || 'Failed to send internal copy');
     } finally {
       setSendingCopy(false);
     }
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: '#020817', color: '#fff', padding: '24px 16px', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ maxWidth: 980, margin: '0 auto' }}>
-        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 24, padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.35)' }}>
+    <main style={{ minHeight: '100vh', background: '#06101f', color: '#fff', padding: '24px 16px', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+        <div style={{ background: 'linear-gradient(180deg,#0f172a,#0b1220)', border: '1px solid rgba(148,163,184,0.14)', borderRadius: 28, padding: 28, boxShadow: '0 18px 46px rgba(2,6,23,0.42)' }}>
           <div style={{ display: 'inline-block', padding: '6px 12px', borderRadius: 999, background: '#172554', color: '#93c5fd', fontSize: 12, marginBottom: 16 }}>
-            Shared Claim
+            Secure Claim Workspace
           </div>
 
-          <h1 style={{ fontSize: 42, margin: '0 0 8px', fontWeight: 700 }}>Claim Summary</h1>
-          <p style={{ color: '#94a3b8', marginBottom: 24 }}>ID: {incident?.id ?? 'N/A'}</p>
+          <h1 style={{ fontSize: 36, margin: '0 0 10px', fontWeight: 800, letterSpacing: '-0.02em' }}>Claim Summary</h1>
+          <p style={{ color: '#94a3b8', marginBottom: 24, fontSize: 13 }}>Claim ID: {incident?.id ?? 'N/A'}</p>
 
           <div style={{ display: 'grid', gap: 16, marginBottom: 24 }}>
             <div style={card}>
@@ -492,7 +493,7 @@ manualPassengerName,
               <div style={{ ...value, lineHeight: 1.6 }}>{incident?.description ?? incident?.title ?? 'No description'}</div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
               <div style={card}>
                 <div style={label}>Airline</div>
                 <div style={value}>{incident?.airline ?? 'N/A'}</div>
@@ -504,13 +505,13 @@ manualPassengerName,
             </div>
           </div>
 
-          <div style={{ background: '#172554', border: '1px solid #1d4ed8', borderRadius: 20, padding: 20, marginBottom: 24 }}>
+          <div style={{ background: 'linear-gradient(180deg,#172554,#1e3a8a)', border: '1px solid rgba(96,165,250,0.28)', borderRadius: 22, padding: 22, marginBottom: 24, boxShadow: '0 14px 30px rgba(30,64,175,0.22)' }}>
             <div style={{ color: '#cbd5e1', fontSize: 14, marginBottom: 8 }}>Claim Amount</div>
             <div style={{ color: '#60a5fa', fontSize: 44, fontWeight: 700 }}>${Number(amount).toFixed(2)}</div>
           </div>
 
           <div style={{ background: '#1e1b4b', border: '1px solid #3730a3', borderRadius: 20, padding: 20, marginBottom: 24 }}>
-            <div style={{ color: '#a5b4fc', fontSize: 14, marginBottom: 8 }}>Compensation Check</div>
+            <div style={{ color: '#a5b4fc', fontSize: 14, marginBottom: 8 }}>Compensation Assessment</div>
             <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{humanEligibilityStatus(eligibility.status)}</div>
             <div style={{ color: '#cbd5e1', marginBottom: 6 }}><strong>Framework:</strong> {eligibility.framework}</div>
             <div style={{ color: '#cbd5e1', marginBottom: 6 }}><strong>Confidence:</strong> {eligibility.confidence}</div>
@@ -545,15 +546,15 @@ manualPassengerName,
 
             {imageDocs.length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 10 }}>Images</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+                <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 10 }}>Image evidence</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
                   {imageDocs.map((doc) => (
                     <div key={doc.id} style={{ background: '#0b1220', border: '1px solid #1e293b', borderRadius: 18, overflow: 'hidden' }}>
                       <a href={doc.file_url} target="_blank" rel="noreferrer">
-                        <img src={doc.file_url} alt={doc.name ?? 'Incident image'} style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block', background: '#111827' }} />
+                        <img src={doc.file_url} alt={doc.name ?? 'Incident image'} style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block', background: '#111827' }} />
                       </a>
-                      <div style={{ padding: 10, fontSize: 12, color: '#94a3b8', wordBreak: 'break-all' }}>
-                        {doc.name ?? 'Image'}
+                      <div style={{ padding: 10, fontSize: 12, color: '#94a3b8', wordBreak: 'break-word', lineHeight: 1.5 }}>
+                        {doc.name ?? 'Evidence image'}
                       </div>
                     </div>
                   ))}
@@ -565,7 +566,7 @@ manualPassengerName,
               <div style={{ display: 'grid', gap: 12 }}>
                 {otherDocs.map((doc) => (
                   <div key={doc.id} style={card}>
-                    <div style={{ ...value, marginBottom: 10 }}>{doc.name ?? 'Document'}</div>
+                    <div style={{ ...value, marginBottom: 10 }}>{doc.name ?? 'Supporting document'}</div>
                     {doc.file_url && (
                       <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#172554', color: '#93c5fd', border: '1px solid #1d4ed8', borderRadius: 14, padding: '10px 14px', textDecoration: 'none', fontWeight: 600 }}>
                         Open file
@@ -585,12 +586,12 @@ manualPassengerName,
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 9999 }}>
           <div style={{ width: '100%', maxWidth: 900, background: '#0f172a', border: '1px solid #3b4d66', borderRadius: 24, padding: 24, maxHeight: '92vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 28, margin: 0 }}>Generate Premium AI Claim Letter</h3>
+              <h3 style={{ fontSize: 28, margin: 0, letterSpacing: '-0.01em' }}>Generate AI Claim Letter</h3>
               <button onClick={() => setOpenLetterModal(false)} style={secondaryBtn}>Close</button>
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>Select language</div>
+              <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>Choose language</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button onClick={() => setLanguage('en')} style={langBtn(language === 'en')}>🇬🇧 English</button>
                 <button onClick={() => setLanguage('ar')} style={langBtn(language === 'ar')}>🇸🇦 العربية</button>
@@ -598,7 +599,7 @@ manualPassengerName,
               </div>
 
               <div style={{ marginTop: 12 }}>
-                <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>Select tone</div>
+                <div style={{ color: '#94a3b8', fontSize: 14, marginBottom: 8 }}>Choose tone</div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={() => setLetterTone('short')} style={langBtn(letterTone === 'short')}>
                     Short
@@ -615,7 +616,7 @@ manualPassengerName,
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
               <button onClick={generateLetter} disabled={loadingLetter} style={primaryBtn}>
-                {loadingLetter ? 'Generating...' : 'Generate'}
+                {loadingLetter ? 'Generating...' : 'Generate letter'}
               </button>
             </div>
 
