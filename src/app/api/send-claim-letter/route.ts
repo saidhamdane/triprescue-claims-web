@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
+import { getBillingAccessByEmail, canSendClaims } from '../../../lib/billing/access';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -56,12 +57,31 @@ export async function POST(req: NextRequest) {
     }
 
     body = await req.json();
-    const { to, subject, letter, replyTo, files, incidentId, tripId, userId, isCopy, previousStatus } = body || {};
+    const { to, subject, letter, replyTo, files, incidentId, tripId, userId, isCopy, previousStatus, customerEmail } = body || {};
 
     if (!to || !subject || !letter) {
       return NextResponse.json(
         { error: 'Missing to, subject, or letter' },
         { status: 400 }
+      );
+    }
+
+    const billingEmail =
+      customerEmail ||
+      replyTo ||
+      to ||
+      null;
+
+    const access = await getBillingAccessByEmail(billingEmail);
+    if (!canSendClaims(access)) {
+      return NextResponse.json(
+        {
+          error: 'Pro plan required to send claims by email',
+          code: 'PLAN_UPGRADE_REQUIRED',
+          plan: access.plan,
+          status: access.status,
+        },
+        { status: 403 }
       );
     }
 
