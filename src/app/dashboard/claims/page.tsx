@@ -130,36 +130,7 @@ function EmptyState() {
       <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 24 }}>No claims sent yet</div>
       <div style={{ color: '#64748b', fontSize: 15, lineHeight: 1.8, marginTop: 10 }}>
         Once you send claim packages by email, this dashboard will show delivery status,
-        recipients, attachments, and timestamps.
-      </div>
-      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 22 }}>
-        <a
-          href="/pricing"
-          style={{
-            textDecoration: 'none',
-            background: '#111827',
-            color: '#fff',
-            padding: '12px 18px',
-            borderRadius: 14,
-            fontWeight: 800,
-          }}
-        >
-          View Pricing
-        </a>
-        <a
-          href="/upgrade"
-          style={{
-            textDecoration: 'none',
-            background: '#fff',
-            color: '#111827',
-            padding: '12px 18px',
-            borderRadius: 14,
-            fontWeight: 800,
-            border: '1px solid #d1d5db',
-          }}
-        >
-          Upgrade to Pro
-        </a>
+        recipients, attachments, timestamps, and direct claim links.
       </div>
     </div>
   );
@@ -177,7 +148,34 @@ export default async function ClaimsDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(100);
 
-  const rows = claims || [];
+  const incidentIds = Array.from(
+    new Set((claims || []).map((r: any) => r.incident_id).filter(Boolean))
+  );
+
+  let shareLinks: any[] = [];
+  if (incidentIds.length > 0) {
+    const { data } = await supabase
+      .from('share_links')
+      .select('incident_id, token, created_at')
+      .in('incident_id', incidentIds)
+      .order('created_at', { ascending: false });
+
+    shareLinks = data || [];
+  }
+
+  const tokenMap = new Map<string, string>();
+  for (const row of shareLinks) {
+    if (row?.incident_id && row?.token && !tokenMap.has(row.incident_id)) {
+      tokenMap.set(row.incident_id, row.token);
+    }
+  }
+
+  const rows = (claims || []).map((row: any) => ({
+    ...row,
+    claim_url: row.incident_id && tokenMap.get(row.incident_id)
+      ? `/claim/${tokenMap.get(row.incident_id)}`
+      : null,
+  }));
 
   const totalClaims = rows.length;
   const sentCount = rows.filter((r: any) => r.send_status === 'sent').length;
@@ -227,8 +225,8 @@ export default async function ClaimsDashboardPage() {
                 </h1>
 
                 <p style={{ color: '#94a3b8', fontSize: 16, lineHeight: 1.9, marginTop: 14 }}>
-                  Monitor delivery status, recipients, attachment counts, and claim sending activity
-                  from one operational view.
+                  Monitor delivery status, recipients, attachments, and claim links from one
+                  operational view.
                 </p>
               </div>
 
@@ -322,7 +320,7 @@ export default async function ClaimsDashboardPage() {
               <div>
                 <div style={{ color: '#0f172a', fontWeight: 800, fontSize: 24 }}>Recent claim activity</div>
                 <div style={{ color: '#64748b', fontSize: 14, marginTop: 8 }}>
-                  Latest sent claims, recipients, attachments, and delivery outcomes.
+                  Latest sent claims, recipients, attachments, delivery outcomes, and direct links.
                 </div>
               </div>
               <div
@@ -345,7 +343,7 @@ export default async function ClaimsDashboardPage() {
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 980 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1120 }}>
                   <thead style={{ background: '#f8fafc' }}>
                     <tr>
                       <th style={th}>Incident</th>
@@ -354,6 +352,7 @@ export default async function ClaimsDashboardPage() {
                       <th style={th}>Attachments</th>
                       <th style={th}>Status</th>
                       <th style={th}>Sent At</th>
+                      <th style={th}>Open</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -367,6 +366,29 @@ export default async function ClaimsDashboardPage() {
                           <StatusBadge status={row.send_status || 'draft'} />
                         </td>
                         <td style={td}>{row.sent_at || '-'}</td>
+                        <td style={td}>
+                          {row.claim_url ? (
+                            <a
+                              href={row.claim_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                textDecoration: 'none',
+                                background: '#111827',
+                                color: '#fff',
+                                padding: '10px 14px',
+                                borderRadius: 12,
+                                fontSize: 13,
+                                fontWeight: 800,
+                                display: 'inline-block',
+                              }}
+                            >
+                              Open
+                            </a>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: 13 }}>No link</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
