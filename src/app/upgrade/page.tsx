@@ -41,19 +41,24 @@ export default function UpgradePage() {
             </p>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
-              <a
-                href="/api/stripe/checkout?plan=pro"
-                style={{
-                  textDecoration: 'none',
-                  background: '#111827',
-                  color: '#fff',
-                  padding: '14px 20px',
-                  borderRadius: 14,
-                  fontWeight: 700,
-                }}
-              >
-                Upgrade to Pro
-              </a>
+              <form method="POST" action="/api/stripe/checkout">
+                <input type="hidden" name="plan" value="pro" />
+                <button
+                  type="submit"
+                  style={{
+                    textDecoration: 'none',
+                    background: '#111827',
+                    color: '#fff',
+                    padding: '14px 20px',
+                    borderRadius: 14,
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Upgrade to Pro
+                </button>
+              </form>
 
               <a
                 href="/pricing"
