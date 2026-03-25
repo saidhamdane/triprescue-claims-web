@@ -1,127 +1,81 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-type AttachmentInput = {
-  name?: string;
-  fileName?: string;
-  filename?: string;
-  url?: string;
-  file_url?: string;
-  mimeType?: string;
-  mime_type?: string;
-  type?: string;
-};
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-const resendApiKey = process.env.RESEND_API_KEY || "";
-const fromEmail =
-  process.env.CLAIMS_FROM_EMAIL ||
-  process.env.RESEND_FROM_EMAIL ||
-  "claims@triprescue.site";
-
-const resend = new Resend(resendApiKey);
-
-function safeFileName(name: string) {
-  return name.replace(/[^\w.\-() ]+/g, "_").trim() || "attachment";
-}
-
-async function fetchAttachment(att: AttachmentInput) {
-  const url = att.url || att.file_url;
-  if (!url) return null;
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to download attachment: ${url}`);
-  }
-
-  const arrayBuffer = await res.arrayBuffer();
-  const contentType =
-    att.mimeType ||
-    att.mime_type ||
-    res.headers.get("content-type") ||
-    "application/octet-stream";
-
-  const rawName =
-    att.name ||
-    att.fileName ||
-    att.filename ||
-    url.split("/").pop() ||
-    "attachment";
-
-  const filename = safeFileName(rawName);
-
-  return {
-    filename,
-    content: Buffer.from(arrayBuffer).toString("base64"),
-    type: contentType,
-    disposition: "attachment" as const,
-  };
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
-    if (!resendApiKey) {
-      return NextResponse.json(
-        { error: "Missing RESEND_API_KEY" },
-        { status: 500 }
-      );
-    }
-
     const body = await req.json();
-
     const to = String(body?.to || "").trim();
     const subject = String(body?.subject || "Travel claim").trim();
     const letter = String(body?.letter || "").trim();
-    const replyTo = String(body?.replyTo || "").trim();
-    const attachmentsInput: AttachmentInput[] = Array.isArray(body?.attachments)
-      ? body.attachments
-      : [];
+    const attachments = Array.isArray(body?.attachments) ? body.attachments : [];
+
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json({ error: "Missing RESEND_API_KEY" }, { status: 500 });
+    }
 
     if (!to) {
-      return NextResponse.json({ error: "Recipient email is required" }, { status: 400 });
+      return NextResponse.json({ error: "Missing recipient" }, { status: 400 });
     }
 
     if (!letter) {
-      return NextResponse.json({ error: "Letter content is required" }, { status: 400 });
+      return NextResponse.json({ error: "Missing letter" }, { status: 400 });
     }
 
-    const attachments = [];
-    for (const att of attachmentsInput.slice(0, 10)) {
+    const builtAttachments = [];
+
+    for (const item of attachments.slice(0, 10)) {
       try {
-        const file = await fetchAttachment(att);
-        if (file) attachments.push(file);
-      } catch (e: any) {
-        console.error("Attachment error:", e?.message || e);
-      }
+        const url = item?.url || item?.file_url;
+        if (!url) continue;
+
+        const res = await fetch(url);
+        if (!res.ok) continue;
+
+        const ab = await res.arrayBuffer();
+        const filename =
+          item?.name ||
+          item?.fileName ||
+          item?.filename ||
+          url.split("/").pop() ||
+          "attachment";
+
+        builtAttachments.push({
+          filename,
+          content: Buffer.from(ab).toString("base64"),
+        });
+      } catch {}
     }
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; white-space: pre-wrap;">
-${letter
-  .replace(/&/g, "&amp;")
-  .replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;")}
-      </div>
-    `;
+    const from =
+      process.env.CLAIMS_FROM_EMAIL ||
+      process.env.RESEND_FROM_EMAIL ||
+      "claims@triprescue.site";
 
-    const result = await resend.emails.send({
-      from: fromEmail,
+    const sent = await resend.emails.send({
+      from,
       to: [to],
       subject,
       text: letter,
-      html,
-      ...(replyTo ? { reply_to: replyTo } : {}),
-      ...(attachments.length ? { attachments } : {}),
+      html: `<div style="white-space:pre-wrap;font-family:Arial,sans-serif;">${letter
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")}</div>`,
+      attachments: builtAttachments,
     });
 
     return NextResponse.json({
       ok: true,
-      id: result.data?.id || null,
-      attachmentsSent: attachments.length,
+      id: sent.data?.id || null,
+      attachmentsSent: builtAttachments.length,
     });
-  } catch (error: any) {
-    console.error("send-email route error:", error);
+  } catch (e: any) {
     return NextResponse.json(
-      { error: error?.message || "Failed to send email" },
+      { error: e?.message || "Failed to send email" },
       { status: 500 }
     );
   }
