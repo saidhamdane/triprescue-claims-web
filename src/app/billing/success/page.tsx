@@ -4,14 +4,16 @@ import { useEffect, useMemo } from "react";
 
 export default function BillingSuccessPage() {
   const appUrl = useMemo(() => {
-    if (typeof window === "undefined") return "triprescue://subscription-success";
+    if (typeof window === "undefined") return "";
 
     const params = new URLSearchParams(window.location.search);
     const incidentId = params.get("incidentId") || "";
-    const returnTo =
-      params.get("returnTo") || "/incident/claim-summary";
+    const returnTo = params.get("returnTo") || "/incident/claim-summary";
 
-    const deep = new URL("triprescue://subscription-success");
+    // مؤقتًا للاختبار عبر Expo Go
+    const expoBase = "exp://10.6.146.193:8081/--/subscription-success";
+
+    const deep = new URL(expoBase);
     if (incidentId) deep.searchParams.set("incidentId", incidentId);
     if (returnTo) deep.searchParams.set("returnTo", returnTo);
 
@@ -19,10 +21,10 @@ export default function BillingSuccessPage() {
   }, []);
 
   useEffect(() => {
+    if (!appUrl) return;
     const t = setTimeout(() => {
       window.location.href = appUrl;
     }, 1200);
-
     return () => clearTimeout(t);
   }, [appUrl]);
 
@@ -85,7 +87,7 @@ export default function BillingSuccessPage() {
             color: "#475569",
           }}
         >
-          Returning you to the TripRescue app…
+          Returning you to the Expo app…
         </p>
 
         <div style={{ marginTop: 22 }}>
@@ -107,6 +109,10 @@ export default function BillingSuccessPage() {
             Open App Now
           </a>
         </div>
+
+        <p style={{ marginTop: 14, color: "#64748b", fontSize: 13, lineHeight: 1.6 }}>
+          {appUrl}
+        </p>
       </div>
     </main>
   );
