@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getEuFlightLegalBasis } from "@/lib/eu-flight-legal";
+import { getEuFlightLegalBasis } from "../../../../lib/eu-flight-legal";
 
 export async function POST(req: NextRequest) {
   try {
