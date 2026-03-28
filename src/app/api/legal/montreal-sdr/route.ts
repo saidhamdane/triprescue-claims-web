@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMontrealBaggageEstimate } from "../../../../lib/montreal-sdr";
+import { getMontrealBaggageEstimate, MONTREAL_SDR_ENGINE_VERSION } from "../../../../lib/montreal-sdr";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
+        engineVersion: MONTREAL_SDR_ENGINE_VERSION,
         compensationEstimate,
       },
       {
@@ -35,6 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
+        engineVersion: MONTREAL_SDR_ENGINE_VERSION,
         error: error?.message || "Failed to resolve Montreal baggage estimate",
       },
       {

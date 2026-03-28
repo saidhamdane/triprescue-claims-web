@@ -1,6 +1,6 @@
 export const MONTREAL_BAGGAGE_CAP_SDR = 1519;
+export const MONTREAL_SDR_ENGINE_VERSION = "ecb-basket-v3";
 
-// Official IMF SDR basket currency amounts effective from 1 Jul 2022
 const SDR_BASKET = {
   USD: 0.58448,
   EUR: 0.37090,
@@ -9,7 +9,6 @@ const SDR_BASKET = {
   GBP: 0.079849,
 } as const;
 
-// ECB EXR daily spot average against EUR
 const ECB_BASE = "https://data-api.ecb.europa.eu/service/data/EXR";
 
 type MontrealInput = {
@@ -35,6 +34,7 @@ export type MontrealEstimate = {
   sourceUrl: string;
   fallbackUsed?: boolean;
   debugError?: string;
+  engineVersion?: string;
 };
 
 function round2(n: number) {
@@ -154,6 +154,7 @@ export async function getMontrealBaggageEstimate(
       sourceDate: live.sourceDate,
       sourceUrl: live.sourceUrl,
       fallbackUsed: false,
+      engineVersion: MONTREAL_SDR_ENGINE_VERSION,
     };
   } catch (err: any) {
     const amountEUR = documentedLossEUR > 0 ? documentedLossEUR : 0;
@@ -175,6 +176,7 @@ export async function getMontrealBaggageEstimate(
       sourceUrl: ECB_BASE,
       fallbackUsed: true,
       debugError: err?.message || String(err),
+      engineVersion: MONTREAL_SDR_ENGINE_VERSION,
     };
   }
 }
