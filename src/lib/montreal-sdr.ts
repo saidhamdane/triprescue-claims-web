@@ -26,6 +26,7 @@ type MontrealEstimate = {
   reason: string;
   sourceDate?: string;
   sourceUrl: string;
+  fallbackUsed?: boolean;
 };
 
 function stripHtml(html: string) {
@@ -53,10 +54,7 @@ function fmtEUR(n: number) {
 function parseImfPage(html: string) {
   const text = stripHtml(html);
 
-  const usdPerSdrMatch =
-    text.match(/SDR1\s*=\s*US\$\s*([0-9.]+)/i) ||
-    text.match(/SDR1\s*=\s*US\$\s*([0-9.]+)/i);
-
+  const usdPerSdrMatch = text.match(/SDR1\s*=\s*US\$\s*([0-9.]+)/i);
   const euroLineMatch =
     text.match(/Euro\s+[0-9.]+\s+([0-9.]+)\s+[0-9.]+/i) ||
     text.match(/Euro\s+([0-9.]+)\s+[0-9.]+\s+[0-9.]+/i);
@@ -81,8 +79,6 @@ function parseImfPage(html: string) {
 }
 
 async function fetchImfRates() {
-  let lastError: unknown = null;
-
   for (const url of IMF_SDR_URLS) {
     try {
       const res = await fetch(url, {
@@ -93,9 +89,7 @@ async function fetchImfRates() {
         cache: "no-store",
       });
 
-      if (!res.ok) {
-        throw new Error(`IMF HTTP ${res.status}`);
-      }
+      if (!res.ok) continue;
 
       const html = await res.text();
       const parsed = parseImfPage(html);
@@ -104,14 +98,12 @@ async function fetchImfRates() {
         ...parsed,
         sourceUrl: url,
       };
-    } catch (err) {
-      lastError = err;
+    } catch {
+      // continue to next IMF source
     }
   }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Unable to fetch IMF SDR rates");
+  return null;
 }
 
 export async function getMontrealBaggageEstimate(
@@ -122,6 +114,30 @@ export async function getMontrealBaggageEstimate(
   const specialDeclaration = Boolean(input.specialDeclaration);
 
   const rates = await fetchImfRates();
+
+  if (!rates) {
+    const amountEUR = documentedLossEUR > 0 ? documentedLossEUR : 0;
+
+    return {
+      category: "baggage",
+      legalModel: "mc99",
+      ceilingSDR: MONTREAL_BAGGAGE_CAP_SDR,
+      sdrToEur: 0,
+      ceilingEUR: 0,
+      documentedLossEUR,
+      amountEUR,
+      rangeLabel: `Up to ${MONTREAL_BAGGAGE_CAP_SDR} SDR`,
+      eligible: true,
+      reason:
+        `Montreal baggage ceiling is ${MONTREAL_BAGGAGE_CAP_SDR} SDR. ` +
+        `Live SDR→EUR conversion is temporarily unavailable, so the app is showing the legal ceiling in SDR` +
+        (documentedLossEUR > 0
+          ? ` and your documented loss in EUR (${fmtEUR(documentedLossEUR)}).`
+          : "."),
+      sourceUrl: "https://www.imf.org/external/np/fin/data/rms_sdrv.aspx",
+      fallbackUsed: true,
+    };
+  }
 
   const baseCeilingEUR = round2(MONTREAL_BAGGAGE_CAP_SDR * rates.sdrToEur);
   const effectiveCeilingEUR =
@@ -140,10 +156,12 @@ export async function getMontrealBaggageEstimate(
     `Estimated ceiling today: ${fmtEUR(effectiveCeilingEUR)}.`;
 
   if (documentedLossEUR > 0) {
-    reason += ` Documented loss submitted: ${fmtEUR(documentedLossEUR)}. ` +
-      `Likely recoverable amount: ${fmtEUR(likelyRecoverableEUR)} (subject to proof and carrier review).`;
+    reason +=
+      ` Documented loss submitted: ${fmtEUR(documentedLossEUR)}.` +
+      ` Likely recoverable amount: ${fmtEUR(likelyRecoverableEUR)} (subject to proof and carrier review).`;
   } else {
-    reason += ` No documented loss amount was supplied, so the card shows the ceiling rather than a proven recoverable amount.`;
+    reason +=
+      ` No documented loss amount was supplied, so the card shows the ceiling rather than a proven recoverable amount.`;
   }
 
   if (specialDeclaration && declaredValueEUR > 0) {
@@ -151,7 +169,7 @@ export async function getMontrealBaggageEstimate(
   }
 
   return {
-    category: "montreal",
+    category: "baggage",
     legalModel: "mc99",
     ceilingSDR: MONTREAL_BAGGAGE_CAP_SDR,
     sdrToEur: rates.sdrToEur,
@@ -163,5 +181,6 @@ export async function getMontrealBaggageEstimate(
     reason,
     sourceDate: rates.sourceDate,
     sourceUrl: rates.sourceUrl,
+    fallbackUsed: false,
   };
 }
