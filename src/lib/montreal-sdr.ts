@@ -50,7 +50,7 @@ function fmtEUR(n: number) {
 }
 
 async function fetchEcbRateToEur(currency: "USD" | "CNY" | "JPY" | "GBP") {
-  const url = `${ECB_BASE}/D.${currency}.EUR.SP00.A?lastNObservations=1&format=csvdata`;
+  const url = `${ECB_BASE}/D.${currency}.EUR.SP00.A?lastNObservations=1&detail=dataonly&format=csvdata`;
 
   const res = await fetch(url, {
     headers: {
@@ -64,31 +64,37 @@ async function fetchEcbRateToEur(currency: "USD" | "CNY" | "JPY" | "GBP") {
     throw new Error(`ECB_${currency}_STATUS:${res.status}`);
   }
 
-  const csv = await res.text();
-  const lines = csv
-    .split(/\r?\n/)
-    .map((x) => x.trim())
-    .filter(Boolean);
+  const body = (await res.text()).replace(/\r/g, "");
+  const dateMatch = body.match(/(\d{4}-\d{2}-\d{2})/);
 
-  if (lines.length < 2) {
-    throw new Error(`ECB_${currency}_NO_OBS`);
+  if (!dateMatch) {
+    throw new Error(`ECB_${currency}_NO_DATE:${body.slice(0, 220)}`);
   }
 
-  const last = lines[lines.length - 1];
-  const parts = last.split(",");
+  const sourceDate = dateMatch[1];
+  const afterDate = body.slice(body.indexOf(sourceDate) + sourceDate.length);
 
-  const value = Number(parts[parts.length - 1]?.replace(/^"|"$/g, ""));
-  const dateField = parts.find((x) =>
-    /^\d{4}-\d{2}-\d{2}$/.test(x.replace(/^"|"$/g, ""))
-  );
+  let value: number | null = null;
 
-  if (!Number.isFinite(value) || value <= 0) {
-    throw new Error(`ECB_${currency}_PARSE:${last}`);
+  let m = afterDate.match(/^\s*,\s*([0-9]+(?:[.,][0-9]+)?)/);
+  if (m) {
+    value = Number(m[1].replace(",", "."));
+  }
+
+  if (!Number.isFinite(value as number)) {
+    m = afterDate.match(/^\s*,\s*([0-9]+)\s*,\s*([0-9]{2,6})(?:\s*,|\s*$)/);
+    if (m) {
+      value = Number(`${m[1]}.${m[2]}`);
+    }
+  }
+
+  if (!Number.isFinite(value as number) || (value as number) <= 0) {
+    throw new Error(`ECB_${currency}_PARSE:${body.slice(0, 220)}`);
   }
 
   return {
-    value,
-    date: dateField?.replace(/^"|"$/g, ""),
+    value: value as number,
+    date: sourceDate,
     url,
   };
 }
