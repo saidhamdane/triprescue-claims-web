@@ -13,7 +13,7 @@ type MontrealInput = {
   lang?: string;
 };
 
-type MontrealEstimate = {
+export type MontrealEstimate = {
   category: string;
   legalModel: string;
   ceilingSDR: number;
@@ -99,7 +99,7 @@ async function fetchImfRates() {
         sourceUrl: url,
       };
     } catch {
-      // continue to next IMF source
+      // try next source
     }
   }
 
@@ -130,10 +130,9 @@ export async function getMontrealBaggageEstimate(
       eligible: true,
       reason:
         `Montreal baggage ceiling is ${MONTREAL_BAGGAGE_CAP_SDR} SDR. ` +
-        `Live SDR→EUR conversion is temporarily unavailable, so the app is showing the legal ceiling in SDR` +
         (documentedLossEUR > 0
-          ? ` and your documented loss in EUR (${fmtEUR(documentedLossEUR)}).`
-          : "."),
+          ? `Your documented loss is ${fmtEUR(documentedLossEUR)}.`
+          : `Documented loss was not provided.`),
       sourceUrl: "https://www.imf.org/external/np/fin/data/rms_sdrv.aspx",
       fallbackUsed: true,
     };
@@ -150,24 +149,6 @@ export async function getMontrealBaggageEstimate(
       ? round2(Math.min(documentedLossEUR, effectiveCeilingEUR))
       : effectiveCeilingEUR;
 
-  let reason =
-    `Montreal baggage ceiling: ${MONTREAL_BAGGAGE_CAP_SDR} SDR. ` +
-    `Current IMF-derived SDR→EUR rate: ${rates.sdrToEur}. ` +
-    `Estimated ceiling today: ${fmtEUR(effectiveCeilingEUR)}.`;
-
-  if (documentedLossEUR > 0) {
-    reason +=
-      ` Documented loss submitted: ${fmtEUR(documentedLossEUR)}.` +
-      ` Likely recoverable amount: ${fmtEUR(likelyRecoverableEUR)} (subject to proof and carrier review).`;
-  } else {
-    reason +=
-      ` No documented loss amount was supplied, so the card shows the ceiling rather than a proven recoverable amount.`;
-  }
-
-  if (specialDeclaration && declaredValueEUR > 0) {
-    reason += ` Special declaration provided: ${fmtEUR(declaredValueEUR)}.`;
-  }
-
   return {
     category: "baggage",
     legalModel: "mc99",
@@ -176,9 +157,12 @@ export async function getMontrealBaggageEstimate(
     ceilingEUR: effectiveCeilingEUR,
     documentedLossEUR,
     amountEUR: likelyRecoverableEUR,
-    rangeLabel: `Up to ${fmtEUR(effectiveCeilingEUR)}`,
+    rangeLabel: `Up to ${fmtEUR(effectiveCeilingEUR)} (${MONTREAL_BAGGAGE_CAP_SDR} SDR)`,
     eligible: true,
-    reason,
+    reason:
+      documentedLossEUR > 0
+        ? `Your documented loss is ${fmtEUR(documentedLossEUR)}. Montreal ceiling today is ${fmtEUR(effectiveCeilingEUR)} (${MONTREAL_BAGGAGE_CAP_SDR} SDR).`
+        : `Montreal ceiling today is ${fmtEUR(effectiveCeilingEUR)} (${MONTREAL_BAGGAGE_CAP_SDR} SDR).`,
     sourceDate: rates.sourceDate,
     sourceUrl: rates.sourceUrl,
     fallbackUsed: false,
