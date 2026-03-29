@@ -49,14 +49,6 @@ function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat("en-IE", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
 async function fetchEcbRateToEur(currency: "USD" | "CNY" | "JPY" | "GBP") {
   const url = `${ECB_BASE}/D.${currency}.EUR.SP00.A?lastNObservations=1&detail=dataonly&format=csvdata`;
 
