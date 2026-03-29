@@ -9,6 +9,14 @@ const SDR_BASKET = {
   GBP: 0.079849,
 } as const;
 
+const fmtEUR = (value: number) =>
+  new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(Math.round((Number(value) || 0) * 100) / 100);
+
 const ECB_BASE = "https://data-api.ecb.europa.eu/service/data/EXR";
 
 type MontrealInput = {
