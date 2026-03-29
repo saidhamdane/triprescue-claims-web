@@ -64,6 +64,69 @@ const sanitizeMontrealEstimate = (estimate: any) => {
 };
 
 
+
+const formatEurHard = (value: number) =>
+  new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(Math.round((Number(value) || 0) * 100) / 100);
+
+const hardNormalizeMontrealEstimate = (estimate: any) => {
+  if (!estimate || typeof estimate !== "object") return estimate;
+
+  const ceilingSDR = Number(estimate?.ceilingSDR || 1519);
+  const documentedLossEUR = Math.round((Number(estimate?.documentedLossEUR || 0)) * 100) / 100;
+
+  let sdrToEur = Number(estimate?.sdrToEur || 0);
+  let ceilingEUR = Number(estimate?.ceilingEUR || 0);
+
+  // emergency guard against x1000 scaling
+  if (sdrToEur > 100) sdrToEur = sdrToEur / 1000;
+  if (ceilingEUR > 100000) ceilingEUR = ceilingEUR / 1000;
+
+  // secondary guard using implied EUR/SDR
+  const impliedPerSdr =
+    ceilingSDR > 0 && ceilingEUR > 0 ? ceilingEUR / ceilingSDR : 0;
+
+  if (impliedPerSdr > 100) {
+    ceilingEUR = ceilingEUR / 1000;
+  }
+
+  sdrToEur = Math.round((Number(sdrToEur) || 0) * 100000) / 100000;
+  ceilingEUR = Math.round((Number(ceilingEUR) || 0) * 100) / 100;
+
+  const amountEUR =
+    documentedLossEUR > 0 && ceilingEUR > 0
+      ? Math.round(Math.min(documentedLossEUR, ceilingEUR) * 100) / 100
+      : Math.round((Number(estimate?.amountEUR || 0)) * 100) / 100;
+
+  const reason =
+    documentedLossEUR > 0 && ceilingEUR > 0
+      ? `Your documented loss is ${formatEurHard(documentedLossEUR)}. Montreal ceiling today is ${formatEurHard(ceilingEUR)} (${ceilingSDR} SDR).`
+      : ceilingEUR > 0
+      ? `Montreal ceiling today is ${formatEurHard(ceilingEUR)} (${ceilingSDR} SDR).`
+      : String(
+          estimate?.reason ||
+            "Montreal baggage claims depend on documented loss, damage, delay, and liability limits."
+        );
+
+  return {
+    ...estimate,
+    sdrToEur,
+    ceilingEUR,
+    documentedLossEUR,
+    amountEUR,
+    rangeLabel:
+      ceilingEUR > 0
+        ? `Up to ${formatEurHard(ceilingEUR)} (${ceilingSDR} SDR)`
+        : String(estimate?.rangeLabel || `Up to ${ceilingSDR} SDR`),
+    reason,
+  };
+};
+
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -87,8 +150,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
-        engineVersion: MONTREAL_SDR_ENGINE_VERSION,
-        compensationEstimate,
+        engineVersion: "ecb-basket-v4-forcefix",
+        compensationEstimate: hardNormalizeMontrealEstimate(compensationEstimate),
       },
       {
         status: 200,
