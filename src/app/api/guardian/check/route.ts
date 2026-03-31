@@ -62,3 +62,4 @@ export async function GET(req: NextRequest) {
   }
   return NextResponse.json({ ok: true, checked: results.length, results, ts: new Date().toISOString() });
 }
+// guardian deploy Tue Mar 31 02:41:57 WEST 2026
