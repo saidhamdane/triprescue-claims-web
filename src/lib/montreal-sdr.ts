@@ -95,7 +95,7 @@ async function getLiveSdrToEur() {
   currencies.forEach((c, i) => {
     const r = results[i];
     if (r.status === "fulfilled") {
-      rates[c] = r.value.value;
+      rates[c] = 1 / r.value.value; // ECB returns currency/EUR → invert to EUR/currency
       dates.push(r.value.date);
       urls.push(r.value.url);
     } else {
