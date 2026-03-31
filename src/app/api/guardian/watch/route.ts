@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+    const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+    const authHeader = req.headers.get("authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+    if (authErr || !user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+    const session = { user };
     const body = await req.json();
     const { flight_number, flight_date, departure_airport, arrival_airport, airline, incident_id, trip_id, push_token } = body;
     if (!flight_number || !flight_date) return NextResponse.json({ error: "flight_number and flight_date required" }, { status: 400 });
