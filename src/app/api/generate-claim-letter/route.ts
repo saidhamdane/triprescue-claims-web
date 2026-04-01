@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { buildClaimLetterPrompt } from '../../../lib/build-claim-letter-prompt';
 import { checkClaimEligibility } from '../../../lib/check-claim-eligibility';
 
@@ -9,6 +10,32 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { language, tone, incident, expenses, documents, flightStatus } = body || {};
+
+    // Inject real user name/email from Supabase auth token
+    try {
+      const authHeader = req.headers.get('authorization') || '';
+      const token = authHeader.replace('Bearer ', '').trim();
+      if (token && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        const sb = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          { global: { headers: { Authorization: `Bearer ${token}` } } }
+        );
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) {
+          const { data: profile } = await sb
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single()
+            .catch(() => ({ data: null }));
+          const realName = profile?.full_name || user.email?.split('@')[0] || '';
+          const realEmail = user.email || '';
+          if (!incident.passenger_name && realName) incident.passenger_name = realName;
+          if (!incident.email && realEmail) incident.email = realEmail;
+        }
+      }
+    } catch (_) {}
    
     if (!incident.passenger_name) incident.passenger_name = req.headers.get('x-user-name') || '';
     if (!incident.email) incident.email = req.headers.get('x-user-email') || '';
