@@ -113,7 +113,7 @@ Requirements:
 5. Mention that supporting documents are attached or available
 6. Request a written response within 14 days
 7. End with a professional sign-off
-8. Use placeholders only when necessary
+8. NEVER use placeholder text like [Your Name] or [Your Contact Information]. If passenger name is provided use it exactly. If email is provided use it exactly. If not provided, leave a blank line.
 9. Keep the wording natural and credible for a real complaint email
 
 Return only the final letter.
