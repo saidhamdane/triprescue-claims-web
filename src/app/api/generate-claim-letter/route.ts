@@ -9,7 +9,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { language, tone, incident, expenses, documents, flightStatus } = body || {};
-
+   
+    if (!incident.passenger_name) incident.passenger_name = req.headers.get('x-user-name') || '';
+    if (!incident.email) incident.email = req.headers.get('x-user-email') || '';
     if (!language || !incident) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -58,3 +60,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Unexpected error' }, { status: 500 });
   }
 }
+// patch applied below - see inline fix

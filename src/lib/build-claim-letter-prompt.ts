@@ -51,12 +51,12 @@ export function buildClaimLetterPrompt({
     incident?.full_name ||
     incident?.user_name ||
     incident?.name ||
-    '[Passenger Name]';
+    '';
 
   const passengerEmail =
     incident?.email ||
     incident?.passenger_email ||
-    '[Passenger Email]';
+    '';
 
   const requestedAmount = Number(incident?.claim_amount || 0);
   const currency = incident?.currency || 'USD';
