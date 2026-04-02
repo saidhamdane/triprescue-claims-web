@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { buildClaimLetterPrompt } from '../../../lib/build-claim-letter-prompt';
-import { checkClaimEligibility } from '../../../lib/check-claim-eligibility';
+import { checkClaimEligibility }
+import { createClient } from '@supabase/supabase-js'; from '../../../lib/check-claim-eligibility';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

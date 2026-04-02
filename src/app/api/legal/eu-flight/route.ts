@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const incidentType = String(body?.incidentType || "");
     const lang = body?.lang || "en";
     const distanceKm = body?.distanceKm ?? null;
-    const delayHours = body?.delayHours ?? null;
+    const delayHours = body?.delayHours ?? (body?.delayMinutes != null ? body.delayMinutes / 60 : null);
 
     const result = getEuFlightLegalBasis({ incidentType, lang });
     const estimate = estimateCompensation({ incidentType, distanceKm, delayHours, lang });
