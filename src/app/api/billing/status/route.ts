@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBillingAccessByEmail } from '../../../../lib/billing/access';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
 export async function GET(req: NextRequest) {
   try {
-    const email = req.nextUrl.searchParams.get('email');
-    const access = await getBillingAccessByEmail(email);
+    const auth = req.headers.get('authorization') ?? '';
+    const token = auth.replace('Bearer ', '').trim();
+    if (!token) return NextResponse.json({ isPro: false });
 
-    return NextResponse.json({
-      ok: true,
-      access,
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error?.message || 'Failed to load billing status' },
-      { status: 500 }
-    );
+    const { data: { user } } = await supabase.auth.getUser(token);
+    if (!user) return NextResponse.json({ isPro: false });
+
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('status, plan')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .single();
+
+    return NextResponse.json({ isPro: !!data, plan: data?.plan || 'free' });
+  } catch {
+    return NextResponse.json({ isPro: false });
   }
 }
