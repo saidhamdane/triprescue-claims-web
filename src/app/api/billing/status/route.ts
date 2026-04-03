@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     if (!user) return NextResponse.json({ isPro: false, plan: 'free' });
 
     const { data } = await supabase
-      .from('subscriptions')
+      .from('user_subscriptions')
       .select('status, plan')
       .eq('user_id', user.id)
       .eq('status', 'active')
