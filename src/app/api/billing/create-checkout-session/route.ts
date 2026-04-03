@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       customer_email: user.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}&return=app`,
+      client_reference_id: user.id,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       metadata: { user_id: user.id },
     });
