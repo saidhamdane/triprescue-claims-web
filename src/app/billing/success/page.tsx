@@ -2,22 +2,34 @@
 
 import { useEffect, useMemo } from "react";
 
+function isSafeDeepLink(url: string): boolean {
+  if (!url) return false;
+  if (/^exp:\/\//i.test(url)) return false;
+  if (/localhost/i.test(url)) return false;
+  if (/127\.0\.0\.1/.test(url)) return false;
+  if (/10\.\d+\.\d+\.\d+:\d+/.test(url)) return false;
+  return true;
+}
+
 export default function BillingSuccessPage() {
   const appUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
 
     const params = new URLSearchParams(window.location.search);
+    const deepLinkParam = params.get("deepLink") || "";
     const incidentId = params.get("incidentId") || "";
     const returnTo = params.get("returnTo") || "/incident/claim-summary";
 
-    // مؤقتًا للاختبار عبر Expo Go
-    const expoBase = "exp://10.6.146.193:8081/--/subscription-success";
+    // Prefer the deepLink passed from the checkout session; validate it is a safe native URL.
+    if (deepLinkParam && isSafeDeepLink(deepLinkParam)) {
+      console.log("[billing] success redirect deepLink =", deepLinkParam);
+      return deepLinkParam;
+    }
 
-    const deep = new URL(expoBase);
-    if (incidentId) deep.searchParams.set("incidentId", incidentId);
-    if (returnTo) deep.searchParams.set("returnTo", returnTo);
-
-    return deep.toString();
+    // Fall back to constructing the native deep link from individual params.
+    const fallback = `triprescue:///subscription-success?incidentId=${encodeURIComponent(incidentId)}&returnTo=${encodeURIComponent(returnTo)}`;
+    console.log("[billing] success redirect deepLink =", fallback);
+    return fallback;
   }, []);
 
   useEffect(() => {
@@ -87,7 +99,7 @@ export default function BillingSuccessPage() {
             color: "#475569",
           }}
         >
-          Returning you to the Expo app…
+          Returning you to the TripRescue app…
         </p>
 
         <div style={{ marginTop: 22 }}>
@@ -109,10 +121,6 @@ export default function BillingSuccessPage() {
             Open App Now
           </a>
         </div>
-
-        <p style={{ marginTop: 14, color: "#64748b", fontSize: 13, lineHeight: 1.6 }}>
-          {appUrl}
-        </p>
       </div>
     </main>
   );
