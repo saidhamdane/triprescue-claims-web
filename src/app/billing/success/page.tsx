@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 function isSafeDeepLink(url: string): boolean {
   if (!url) return false;
@@ -11,63 +12,100 @@ function isSafeDeepLink(url: string): boolean {
   return true;
 }
 
-export default function BillingSuccessPage() {
-  const { sessionId, appUrl } = useMemo(() => {
-    if (typeof window === "undefined") return { sessionId: "", appUrl: "" };
+type ActivationState = "activating" | "success" | "error" | "no-session";
 
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id") || "";
-    const deepLinkParam = params.get("deepLink") || "";
-    const incidentId = params.get("incidentId") || "";
-    const returnTo = params.get("returnTo") || "/incident/claim-summary";
+function BillingSuccessInner() {
+  const searchParams = useSearchParams();
 
-    const appUrl =
-      deepLinkParam && isSafeDeepLink(deepLinkParam)
-        ? deepLinkParam
-        : `triprescue:///subscription-success?incidentId=${encodeURIComponent(incidentId)}&returnTo=${encodeURIComponent(returnTo)}`;
+  const sessionId = searchParams.get("session_id") || "";
+  const deepLinkParam = searchParams.get("deepLink") || "";
+  const incidentId = searchParams.get("incidentId") || "";
+  const returnTo = searchParams.get("returnTo") || "/incident/claim-summary";
 
-    console.log("[billing] success redirect deepLink =", appUrl);
-    return { sessionId, appUrl };
-  }, []);
+  const appUrl =
+    deepLinkParam && isSafeDeepLink(deepLinkParam)
+      ? deepLinkParam
+      : `triprescue:///subscription-success?incidentId=${encodeURIComponent(incidentId)}&returnTo=${encodeURIComponent(returnTo)}`;
+
+  const [activationState, setActivationState] = useState<ActivationState>("activating");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (!appUrl) return;
+    console.log("[billing] success page mounted");
+    console.log("[billing] success session_id =", sessionId);
+    console.log("[billing] success redirect deepLink =", appUrl);
 
-    // Activate the subscription server-side, then redirect.
-    // A 4-second hard timeout ensures the user is never stuck here.
+    if (!sessionId) {
+      setActivationState("no-session");
+      const t = setTimeout(() => {
+        window.location.href = appUrl;
+      }, 1200);
+      return () => clearTimeout(t);
+    }
+
     let redirected = false;
-    const redirect = () => {
+    const doRedirect = () => {
       if (redirected) return;
       redirected = true;
       window.location.href = appUrl;
     };
 
-    const maxWait = setTimeout(redirect, 4000);
+    // Hard cap: redirect no matter what after 4 seconds.
+    const maxWait = setTimeout(doRedirect, 4000);
 
-    if (sessionId) {
-      fetch("/api/billing/activate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId }),
+    console.log("[billing] calling activate");
+
+    fetch("/api/billing/activate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        console.log("[billing] activate response =", JSON.stringify(data));
+        if (data.ok) {
+          setActivationState("success");
+        } else {
+          console.warn("[billing] activate error =", data.error);
+          setActivationState("error");
+          setErrorMsg(data.error || "Unknown error");
+        }
       })
-        .then((r) => r.json())
-        .then((data) => {
-          if (!data.ok) console.warn("[billing] activate response:", data.error);
-        })
-        .catch((e) => console.warn("[billing] activate fetch error:", e))
-        .finally(() => {
-          clearTimeout(maxWait);
-          // Small pause so the "active" badge is visible before redirect.
-          setTimeout(redirect, 600);
-        });
-    } else {
-      // No session_id — redirect after a short delay (webhook will handle activation).
-      setTimeout(redirect, 1200);
-      clearTimeout(maxWait);
-    }
+      .catch((e) => {
+        console.log("[billing] activate error =", e?.message);
+        setActivationState("error");
+        setErrorMsg(e?.message || "Network error");
+      })
+      .finally(() => {
+        clearTimeout(maxWait);
+        // Short pause so the success/error state is visible before redirect.
+        setTimeout(doRedirect, 600);
+      });
 
     return () => clearTimeout(maxWait);
-  }, [sessionId, appUrl]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
+  const statusLabel: Record<ActivationState, string> = {
+    activating: "Activating subscription…",
+    success: "Activation successful",
+    error: `Activation failed: ${errorMsg}`,
+    "no-session": "Activation failed: missing session_id",
+  };
+
+  const statusColor: Record<ActivationState, string> = {
+    activating: "#1d4ed8",
+    success: "#166534",
+    error: "#991b1b",
+    "no-session": "#991b1b",
+  };
+
+  const statusBg: Record<ActivationState, string> = {
+    activating: "#dbeafe",
+    success: "#dcfce7",
+    error: "#fee2e2",
+    "no-session": "#fee2e2",
+  };
 
   return (
     <main
@@ -97,14 +135,14 @@ export default function BillingSuccessPage() {
             display: "inline-block",
             padding: "6px 10px",
             borderRadius: 999,
-            background: "#dcfce7",
-            color: "#166534",
+            background: statusBg[activationState],
+            color: statusColor[activationState],
             fontWeight: 700,
             fontSize: 12,
             marginBottom: 14,
           }}
         >
-          Subscription active
+          {statusLabel[activationState]}
         </div>
 
         <h1
@@ -128,7 +166,11 @@ export default function BillingSuccessPage() {
             color: "#475569",
           }}
         >
-          Returning you to the TripRescue app…
+          {activationState === "activating"
+            ? "Activating your subscription…"
+            : activationState === "success"
+            ? "Returning you to the TripRescue app…"
+            : statusLabel[activationState]}
         </p>
 
         <div style={{ marginTop: 22 }}>
@@ -152,5 +194,13 @@ export default function BillingSuccessPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense fallback={null}>
+      <BillingSuccessInner />
+    </Suspense>
   );
 }
