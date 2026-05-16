@@ -12,33 +12,62 @@ function isSafeDeepLink(url: string): boolean {
 }
 
 export default function BillingSuccessPage() {
-  const appUrl = useMemo(() => {
-    if (typeof window === "undefined") return "";
+  const { sessionId, appUrl } = useMemo(() => {
+    if (typeof window === "undefined") return { sessionId: "", appUrl: "" };
 
     const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id") || "";
     const deepLinkParam = params.get("deepLink") || "";
     const incidentId = params.get("incidentId") || "";
     const returnTo = params.get("returnTo") || "/incident/claim-summary";
 
-    // Prefer the deepLink passed from the checkout session; validate it is a safe native URL.
-    if (deepLinkParam && isSafeDeepLink(deepLinkParam)) {
-      console.log("[billing] success redirect deepLink =", deepLinkParam);
-      return deepLinkParam;
-    }
+    const appUrl =
+      deepLinkParam && isSafeDeepLink(deepLinkParam)
+        ? deepLinkParam
+        : `triprescue:///subscription-success?incidentId=${encodeURIComponent(incidentId)}&returnTo=${encodeURIComponent(returnTo)}`;
 
-    // Fall back to constructing the native deep link from individual params.
-    const fallback = `triprescue:///subscription-success?incidentId=${encodeURIComponent(incidentId)}&returnTo=${encodeURIComponent(returnTo)}`;
-    console.log("[billing] success redirect deepLink =", fallback);
-    return fallback;
+    console.log("[billing] success redirect deepLink =", appUrl);
+    return { sessionId, appUrl };
   }, []);
 
   useEffect(() => {
     if (!appUrl) return;
-    const t = setTimeout(() => {
+
+    // Activate the subscription server-side, then redirect.
+    // A 4-second hard timeout ensures the user is never stuck here.
+    let redirected = false;
+    const redirect = () => {
+      if (redirected) return;
+      redirected = true;
       window.location.href = appUrl;
-    }, 1200);
-    return () => clearTimeout(t);
-  }, [appUrl]);
+    };
+
+    const maxWait = setTimeout(redirect, 4000);
+
+    if (sessionId) {
+      fetch("/api/billing/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data.ok) console.warn("[billing] activate response:", data.error);
+        })
+        .catch((e) => console.warn("[billing] activate fetch error:", e))
+        .finally(() => {
+          clearTimeout(maxWait);
+          // Small pause so the "active" badge is visible before redirect.
+          setTimeout(redirect, 600);
+        });
+    } else {
+      // No session_id — redirect after a short delay (webhook will handle activation).
+      setTimeout(redirect, 1200);
+      clearTimeout(maxWait);
+    }
+
+    return () => clearTimeout(maxWait);
+  }, [sessionId, appUrl]);
 
   return (
     <main

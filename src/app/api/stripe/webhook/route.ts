@@ -16,6 +16,7 @@ async function upsertSubscription(payload: {
   stripe_customer_id?: string | null;
   stripe_subscription_id?: string | null;
   stripe_checkout_session_id?: string | null;
+  current_period_start?: string | null;
   current_period_end?: string | null;
   stripe_price_id?: string | null;
   cancel_at_period_end?: boolean;
@@ -29,6 +30,7 @@ async function upsertSubscription(payload: {
       stripe_customer_id: payload.stripe_customer_id || null,
       stripe_subscription_id: payload.stripe_subscription_id || null,
       stripe_checkout_session_id: payload.stripe_checkout_session_id || null,
+      current_period_start: payload.current_period_start || null,
       current_period_end: payload.current_period_end || null,
       stripe_price_id: payload.stripe_price_id || null,
       cancel_at_period_end: payload.cancel_at_period_end ?? false,
@@ -58,25 +60,30 @@ export async function POST(req: NextRequest) {
       const userId = String(session.metadata?.user_id || session.client_reference_id || "").trim();
 
       if (userId) {
+        let currentPeriodStart: string | null = null;
         let currentPeriodEnd: string | null = null;
         let priceId: string | null = null;
         let cancelAtPeriodEnd = false;
+        let subStatus = "active";
 
         if (session.subscription && typeof session.subscription === "string") {
           const sub = await stripe.subscriptions.retrieve(session.subscription);
+          currentPeriodStart = unixToIso(sub.current_period_start);
           currentPeriodEnd = unixToIso(sub.current_period_end);
           cancelAtPeriodEnd = sub.cancel_at_period_end;
           priceId = sub.items.data[0]?.price?.id || null;
+          subStatus = sub.status === "active" || sub.status === "trialing" ? sub.status : "active";
         }
 
         await upsertSubscription({
           user_id: userId,
           email: session.customer_details?.email || session.metadata?.email || undefined,
           plan: "pro",
-          status: "active",
+          status: subStatus,
           stripe_customer_id: typeof session.customer === "string" ? session.customer : null,
           stripe_subscription_id: typeof session.subscription === "string" ? session.subscription : null,
           stripe_checkout_session_id: session.id,
+          current_period_start: currentPeriodStart,
           current_period_end: currentPeriodEnd,
           stripe_price_id: priceId,
           cancel_at_period_end: cancelAtPeriodEnd,
@@ -93,9 +100,10 @@ export async function POST(req: NextRequest) {
           user_id: userId,
           email: sub.metadata?.email || undefined,
           plan: "pro",
-          status: sub.status === "active" || sub.status === "trialing" ? "active" : sub.status,
+          status: sub.status === "active" || sub.status === "trialing" ? sub.status : sub.status,
           stripe_customer_id: typeof sub.customer === "string" ? sub.customer : null,
           stripe_subscription_id: sub.id,
+          current_period_start: unixToIso(sub.current_period_start),
           current_period_end: unixToIso(sub.current_period_end),
           stripe_price_id: sub.items.data[0]?.price?.id || null,
           cancel_at_period_end: sub.cancel_at_period_end,
@@ -115,6 +123,7 @@ export async function POST(req: NextRequest) {
           status: "canceled",
           stripe_customer_id: typeof sub.customer === "string" ? sub.customer : null,
           stripe_subscription_id: sub.id,
+          current_period_start: unixToIso(sub.current_period_start),
           current_period_end: unixToIso(sub.current_period_end),
           cancel_at_period_end: true,
         });
